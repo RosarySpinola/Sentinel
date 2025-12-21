@@ -122,43 +122,7 @@ const endpoints: Record<string, EndpointProps[]> = {
       method: "POST",
       path: "/api/simulate",
       description:
-        "Simulate a Move transaction without submitting it to the blockchain. Returns execution results, gas usage, and state changes.",
-      headers: [
-        {
-          name: "Content-Type",
-          required: true,
-          description: "application/json",
-        },
-        {
-          name: "X-API-Key",
-          required: true,
-          description: "Your Sentinel API key",
-        },
-      ],
-      requestBody: {
-        network: "testnet",
-        sender: "0x1",
-        module_address: "0x1",
-        module_name: "coin",
-        function_name: "transfer",
-        type_args: ["0x1::aptos_coin::AptosCoin"],
-        args: ["0x2", "1000000"],
-      },
-      responseBody: {
-        success: true,
-        gas_used: 1234,
-        vm_status: "Executed successfully",
-        events: [],
-        changes: [],
-      },
-    },
-  ],
-  debugger: [
-    {
-      method: "POST",
-      path: "/api/trace",
-      description:
-        "Step-by-step execution trace of a Move transaction. Returns detailed execution steps, gas per operation, and stack traces.",
+        "Simulate a Move view function (read-only). Use is_view: true for functions that don't modify state. No authentication required.",
       headers: [
         {
           name: "Content-Type",
@@ -179,6 +143,79 @@ const endpoints: Record<string, EndpointProps[]> = {
         function_name: "balance",
         type_args: ["0x1::aptos_coin::AptosCoin"],
         args: ["0x1"],
+        is_view: true,
+      },
+      responseBody: {
+        success: true,
+        gas_used: 0,
+        vm_status: "Executed successfully",
+        events: [{ type: "view_function_result", data: ["1000000"] }],
+        state_changes: [],
+      },
+    },
+    {
+      method: "POST",
+      path: "/api/simulate",
+      description:
+        "Simulate an entry function (state-changing). Requires your wallet's public_key for auth validation. Use your actual wallet address as sender.",
+      headers: [
+        {
+          name: "Content-Type",
+          required: true,
+          description: "application/json",
+        },
+        {
+          name: "X-API-Key",
+          required: true,
+          description: "Your Sentinel API key",
+        },
+      ],
+      requestBody: {
+        network: "testnet",
+        sender: "0xYOUR_WALLET_ADDRESS",
+        module_address: "0x1",
+        module_name: "coin",
+        function_name: "transfer",
+        type_args: ["0x1::aptos_coin::AptosCoin"],
+        args: ["0xRECIPIENT_ADDRESS", "1000000"],
+        public_key: "0xYOUR_ED25519_PUBLIC_KEY",
+      },
+      responseBody: {
+        success: true,
+        gas_used: 1234,
+        vm_status: "Executed successfully",
+        events: [],
+        state_changes: [],
+      },
+    },
+  ],
+  debugger: [
+    {
+      method: "POST",
+      path: "/api/trace",
+      description:
+        "Step-by-step execution trace of a Move transaction. Returns detailed execution steps, gas per operation, and stack traces. Use is_view: true for view functions.",
+      headers: [
+        {
+          name: "Content-Type",
+          required: true,
+          description: "application/json",
+        },
+        {
+          name: "X-API-Key",
+          required: true,
+          description: "Your Sentinel API key",
+        },
+      ],
+      requestBody: {
+        network: "testnet",
+        sender: "0x1",
+        module_address: "0x1",
+        module_name: "coin",
+        function_name: "balance",
+        type_args: ["0x1::aptos_coin::AptosCoin"],
+        args: ["0x1"],
+        is_view: true,
       },
       responseBody: {
         steps: [
@@ -398,9 +435,9 @@ export default function ApiDocsPage() {
           </ol>
 
           <div className="mt-4">
-            <h4 className="font-semibold mb-2">Example cURL Request</h4>
+            <h4 className="font-semibold mb-2">Example cURL Request (View Function)</h4>
             <CodeBlock
-              code={`curl -X POST http://localhost:3005/api/simulate \\
+              code={`curl -X POST https://sentinel-debugger.vercel.app/api/simulate \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: sk_live_xxxxxxxxxxxxxxxx" \\
   -d '{
@@ -410,7 +447,8 @@ export default function ApiDocsPage() {
     "module_name": "coin",
     "function_name": "balance",
     "type_args": ["0x1::aptos_coin::AptosCoin"],
-    "args": ["0x1"]
+    "args": ["0x1"],
+    "is_view": true
   }'`}
             language="bash"
           />
