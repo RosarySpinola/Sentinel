@@ -16,6 +16,7 @@ import {
   Key,
   Settings,
   ShieldCheck,
+  FileCode,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -71,6 +72,12 @@ const settingsItems = [
     href: "/settings/api-keys",
     icon: Key,
     description: "Manage API keys",
+  },
+  {
+    title: "API Docs",
+    href: "/settings/api-docs",
+    icon: FileCode,
+    description: "REST API reference",
   },
 ];
 
