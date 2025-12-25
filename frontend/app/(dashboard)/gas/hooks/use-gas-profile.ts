@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GasProfile, GasAnalysisRequest } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 import { saveGasAnalysis } from "@/lib/services/history-service";
 import { useProject } from "@/lib/contexts/project-context";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export interface UseGasProfileReturn {
   profile: GasProfile | null;
@@ -17,7 +17,7 @@ export interface UseGasProfileReturn {
 
 export function useGasProfile(): UseGasProfileReturn {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [profile, setProfile] = useState<GasProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -69,14 +69,15 @@ export function useGasProfile(): UseGasProfileReturn {
         setProfile(gasProfile);
 
         // Save to history as a gas analysis (only if wallet connected)
-        if (account?.address) {
+        if (walletAddress) {
           try {
-            // Find top operation and function from breakdown
-            const topOperation = gasProfile.breakdown[0]?.operation || "unknown";
-            const topFunction = gasProfile.breakdown[0]?.function_name || "unknown";
+            // Find top operation and function from breakdown (handle missing breakdown)
+            const breakdown = gasProfile.breakdown || [];
+            const topOperation = breakdown[0]?.operation || "unknown";
+            const topFunction = breakdown[0]?.function_name || request.functionName;
 
             await saveGasAnalysis({
-              walletAddress: account.address.toString(),
+              walletAddress,
               projectId: projectId ?? undefined,
               network: request.network,
               senderAddress: request.sender,
@@ -102,7 +103,7 @@ export function useGasProfile(): UseGasProfileReturn {
         setIsLoading(false);
       }
     },
-    [apiKey, projectId, account?.address]
+    [apiKey, projectId, walletAddress]
   );
 
   const clear = useCallback(() => {

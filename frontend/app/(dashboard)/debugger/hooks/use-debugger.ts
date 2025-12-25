@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import type { TraceRequest, TraceResult, ExecutionStep } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 import { useProject } from "@/lib/contexts/project-context";
 import { saveDebuggerRun } from "@/lib/services/history-service";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 interface UseDebuggerReturn {
   trace: TraceResult | null;
@@ -28,7 +28,7 @@ export function useDebugger(): UseDebuggerReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { apiKey } = useApiKey();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const { selectedProject } = useProject();
 
   const hasSession = trace !== null && trace.steps.length > 0;
@@ -71,10 +71,10 @@ export function useDebugger(): UseDebuggerReturn {
       setCurrentStep(0);
 
       // Save to history if wallet is connected
-      if (account?.address) {
+      if (walletAddress) {
         try {
           await saveDebuggerRun({
-            walletAddress: account.address,
+            walletAddress,
             projectId: selectedProject?.id,
             network: request.network,
             senderAddress: request.sender,
@@ -98,7 +98,7 @@ export function useDebugger(): UseDebuggerReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey, account?.address, selectedProject?.id]);
+  }, [apiKey, walletAddress, selectedProject?.id]);
 
   const stepForward = useCallback(() => {
     if (trace && currentStep < trace.steps.length - 1) {

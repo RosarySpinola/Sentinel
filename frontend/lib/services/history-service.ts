@@ -11,6 +11,85 @@ import type {
 // So we use empty string for same-origin requests
 const API_BASE = "";
 
+// Map snake_case API response to camelCase for frontend types
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapSimulation(item: any): SimulationHistory {
+  return {
+    id: item.id,
+    projectId: item.project_id,
+    network: item.network,
+    senderAddress: item.sender_address,
+    moduleAddress: item.module_address,
+    moduleName: item.module_name,
+    functionName: item.function_name,
+    typeArguments: item.type_arguments,
+    arguments: item.arguments,
+    success: item.success,
+    gasUsed: item.gas_used || 0,
+    vmStatus: item.vm_status,
+    stateChanges: item.state_changes,
+    events: item.events,
+    errorMessage: item.error_message,
+    createdAt: item.created_at,
+    result: item.result,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapProverRun(item: any): ProverRunHistory {
+  return {
+    id: item.id,
+    projectId: item.project_id,
+    code: item.code,
+    modules: item.modules || [],
+    status: item.status,
+    durationMs: item.duration_ms || 0,
+    results: item.results,
+    errorMessage: item.error_message,
+    createdAt: item.created_at,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapDebuggerRun(item: any): DebuggerHistory {
+  return {
+    id: item.id,
+    projectId: item.project_id,
+    network: item.network,
+    senderAddress: item.sender_address,
+    moduleAddress: item.module_address,
+    moduleName: item.module_name,
+    functionName: item.function_name,
+    typeArguments: item.type_arguments,
+    arguments: item.arguments,
+    totalSteps: item.total_steps || 0,
+    totalGas: item.total_gas || 0,
+    createdAt: item.created_at,
+    result: item.result,
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function mapGasAnalysis(item: any): GasAnalysisHistory {
+  return {
+    id: item.id,
+    projectId: item.project_id,
+    network: item.network,
+    senderAddress: item.sender_address,
+    moduleAddress: item.module_address,
+    moduleName: item.module_name,
+    functionName: item.function_name,
+    typeArguments: item.type_arguments,
+    arguments: item.arguments,
+    totalGas: item.total_gas || 0,
+    topOperation: item.top_operation,
+    topFunction: item.top_function,
+    suggestionsCount: item.suggestions_count || 0,
+    createdAt: item.created_at,
+    result: item.result,
+  };
+}
+
 export interface HistoryServiceOptions {
   walletAddress?: string;
 }
@@ -39,7 +118,11 @@ export async function listSimulations(
   if (!response.ok) {
     throw new Error("Failed to fetch simulations");
   }
-  return response.json();
+  const data = await response.json();
+  return {
+    ...data,
+    items: (data.items || []).map(mapSimulation),
+  };
 }
 
 export async function getSimulation(
@@ -112,7 +195,11 @@ export async function listProverRuns(
   if (!response.ok) {
     throw new Error("Failed to fetch prover runs");
   }
-  return response.json();
+  const data = await response.json();
+  return {
+    ...data,
+    items: (data.items || []).map(mapProverRun),
+  };
 }
 
 export async function getProverRun(
@@ -185,7 +272,11 @@ export async function listDebuggerRuns(
   if (!response.ok) {
     throw new Error("Failed to fetch debugger runs");
   }
-  return response.json();
+  const data = await response.json();
+  return {
+    ...data,
+    items: (data.items || []).map(mapDebuggerRun),
+  };
 }
 
 export interface SaveDebuggerRunData
@@ -239,7 +330,11 @@ export async function listGasAnalyses(
   if (!response.ok) {
     throw new Error("Failed to fetch gas analyses");
   }
-  return response.json();
+  const data = await response.json();
+  return {
+    ...data,
+    items: (data.items || []).map(mapGasAnalysis),
+  };
 }
 
 export interface SaveGasAnalysisData

@@ -1,15 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { SimulationRequest, SimulationResult } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 import { saveSimulation } from "@/lib/services/history-service";
 import { useProject } from "@/lib/contexts/project-context";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export function useSimulation() {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -85,10 +85,10 @@ export function useSimulation() {
       setResult(mappedResult);
 
       // Save to history (only if wallet connected)
-      if (account?.address) {
+      if (walletAddress) {
         try {
           await saveSimulation({
-            walletAddress: account.address.toString(),
+            walletAddress,
             projectId: projectId ?? undefined,
             network: request.network,
             senderAddress: request.sender,
@@ -115,7 +115,7 @@ export function useSimulation() {
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey, projectId, account?.address]);
+  }, [apiKey, projectId, walletAddress]);
 
   const reset = useCallback(() => {
     setResult(null);

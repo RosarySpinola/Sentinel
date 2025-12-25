@@ -68,7 +68,7 @@ export function ProverTable({
               {formatDistanceToNow(new Date(run.createdAt))}
             </TableCell>
             <TableCell className="font-mono text-sm">
-              {run.moduleName}
+              {run.modules?.join(", ") || "-"}
             </TableCell>
             <TableCell>
               <Badge variant="outline" className={statusColors[run.status]}>

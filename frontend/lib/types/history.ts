@@ -21,11 +21,13 @@ export interface SimulationHistory {
 export interface ProverRunHistory {
   id: string;
   projectId?: string;
-  moduleName: string;
+  code: string;
+  modules: string[];
   status: "passed" | "failed" | "timeout" | "error";
   durationMs: number;
+  results?: Record<string, unknown>;
+  errorMessage?: string;
   createdAt: string;
-  result?: Record<string, unknown>;
 }
 
 export interface DebuggerHistory {

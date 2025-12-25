@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import type {
   SimulationHistory,
   ProverRunHistory,
@@ -11,19 +10,20 @@ import type {
 } from "@/lib/types/history";
 import * as historyService from "@/lib/services/history-service";
 import { useProject } from "@/lib/contexts/project-context";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export function useSimulationHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [simulations, setSimulations] = useState<SimulationHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSimulations = useCallback(async () => {
-    if (!account?.address) {
+    if (!walletAddress) {
       setSimulations([]);
       setTotal(0);
       setIsLoading(false);
@@ -38,7 +38,7 @@ export function useSimulationHistory(
           projectId: projectId ?? undefined,
           ...filters,
         },
-        { walletAddress: account.address.toString() }
+        { walletAddress }
       );
       setSimulations(data.items);
       setTotal(data.total);
@@ -49,7 +49,7 @@ export function useSimulationHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters, account?.address]);
+  }, [projectId, filters, walletAddress]);
 
   useEffect(() => {
     fetchSimulations();
@@ -62,14 +62,14 @@ export function useProverRunHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [proverRuns, setProverRuns] = useState<ProverRunHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProverRuns = useCallback(async () => {
-    if (!account?.address) {
+    if (!walletAddress) {
       setProverRuns([]);
       setTotal(0);
       setIsLoading(false);
@@ -84,7 +84,7 @@ export function useProverRunHistory(
           projectId: projectId ?? undefined,
           ...filters,
         },
-        { walletAddress: account.address.toString() }
+        { walletAddress }
       );
       setProverRuns(data.items);
       setTotal(data.total);
@@ -95,7 +95,7 @@ export function useProverRunHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters, account?.address]);
+  }, [projectId, filters, walletAddress]);
 
   useEffect(() => {
     fetchProverRuns();
@@ -108,14 +108,14 @@ export function useDebuggerHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [debuggerRuns, setDebuggerRuns] = useState<DebuggerHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchDebuggerRuns = useCallback(async () => {
-    if (!account?.address) {
+    if (!walletAddress) {
       setDebuggerRuns([]);
       setTotal(0);
       setIsLoading(false);
@@ -130,7 +130,7 @@ export function useDebuggerHistory(
           projectId: projectId ?? undefined,
           ...filters,
         },
-        { walletAddress: account.address.toString() }
+        { walletAddress }
       );
       setDebuggerRuns(data.items);
       setTotal(data.total);
@@ -141,7 +141,7 @@ export function useDebuggerHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters, account?.address]);
+  }, [projectId, filters, walletAddress]);
 
   useEffect(() => {
     fetchDebuggerRuns();
@@ -154,14 +154,14 @@ export function useGasAnalysisHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
-  const { account } = useWallet();
+  const { walletAddress } = useAuth();
   const [gasAnalyses, setGasAnalyses] = useState<GasAnalysisHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchGasAnalyses = useCallback(async () => {
-    if (!account?.address) {
+    if (!walletAddress) {
       setGasAnalyses([]);
       setTotal(0);
       setIsLoading(false);
@@ -176,7 +176,7 @@ export function useGasAnalysisHistory(
           projectId: projectId ?? undefined,
           ...filters,
         },
-        { walletAddress: account.address.toString() }
+        { walletAddress }
       );
       setGasAnalyses(data.items);
       setTotal(data.total);
@@ -187,7 +187,7 @@ export function useGasAnalysisHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters, account?.address]);
+  }, [projectId, filters, walletAddress]);
 
   useEffect(() => {
     fetchGasAnalyses();
