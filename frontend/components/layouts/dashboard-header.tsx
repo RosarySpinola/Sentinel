@@ -1,6 +1,7 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { WalletSelectionModal } from "@/components/wallet-selection-modal";
@@ -13,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Wallet, LogOut, Copy, ExternalLink, Menu } from "lucide-react";
+import { Wallet, LogOut, Copy, ExternalLink, Menu, User } from "lucide-react";
 import { toast } from "sonner";
 import {
   Sheet,
@@ -122,6 +123,24 @@ export function DashboardHeader() {
             </Button>
           </WalletSelectionModal>
         )}
+
+        {/* User authentication */}
+        <SignedIn>
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "h-8 w-8",
+              },
+            }}
+          />
+        </SignedIn>
+        <SignedOut>
+          <SignInButton mode="modal">
+            <Button variant="outline" size="icon">
+              <User className="h-4 w-4" />
+            </Button>
+          </SignInButton>
+        </SignedOut>
       </div>
     </header>
   );

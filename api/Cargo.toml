@@ -36,5 +36,20 @@ chrono = { version = "0.4", features = ["serde"] }
 tempfile = "3"
 regex = "1"
 
+# Database
+sqlx = { version = "0.8", features = ["runtime-tokio", "postgres", "uuid", "chrono", "json"] }
+
+# Authentication
+argon2 = "0.5"
+rand = "0.8"
+base64 = "0.22"
+
+# Caching
+redis = { version = "0.27", features = ["tokio-comp", "connection-manager"] }
+sha2 = "0.10"
+
+# Error monitoring
+sentry = "0.34"
+
 [dev-dependencies]
 axum-test = "17"
