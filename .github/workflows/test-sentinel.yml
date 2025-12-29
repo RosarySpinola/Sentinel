@@ -1,0 +1,89 @@
+name: Test Sentinel Action
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  test-action:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Sentinel Action - Prover Only
+        uses: ./action
+        with:
+          api_key: ${{ secrets.SENTINEL_API_KEY }}
+          api_url: ${{ secrets.SENTINEL_API_URL || 'https://api.sentinel.dev' }}
+          project_path: ./move
+          run_prover: 'true'
+          run_simulation: 'false'
+
+      - name: Test Sentinel Action - With Simulation
+        if: ${{ secrets.SENTINEL_API_KEY != '' }}
+        uses: ./action
+        with:
+          api_key: ${{ secrets.SENTINEL_API_KEY }}
+          api_url: ${{ secrets.SENTINEL_API_URL || 'https://api.sentinel.dev' }}
+          project_path: ./move
+          network: testnet
+          gas_threshold: '50000'
+          run_prover: 'true'
+          run_simulation: 'true'
+          scenarios: |
+            - name: Basic transfer test
+              sender: "0x1"
+              module_address: "0x1"
+              module_name: "coin"
+              function_name: "transfer"
+              type_args: ["0x1::aptos_coin::AptosCoin"]
+              args: ["0x2", "100"]
+              expect_success: true
+            - name: Zero amount transfer
+              sender: "0x1"
+              module_address: "0x1"
+              module_name: "coin"
+              function_name: "transfer"
+              type_args: ["0x1::aptos_coin::AptosCoin"]
+              args: ["0x2", "0"]
+              expect_success: false
+
+  test-gas-threshold:
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Test Gas Threshold Failure
+        continue-on-error: true
+        id: gas-test
+        uses: ./action
+        with:
+          api_key: ${{ secrets.SENTINEL_API_KEY }}
+          api_url: ${{ secrets.SENTINEL_API_URL || 'https://api.sentinel.dev' }}
+          project_path: ./move
+          run_prover: 'false'
+          run_simulation: 'true'
+          gas_threshold: '100'
+          scenarios: |
+            - name: High gas scenario
+              sender: "0x1"
+              module_address: "0x1"
+              module_name: "coin"
+              function_name: "transfer"
+              type_args: ["0x1::aptos_coin::AptosCoin"]
+              args: ["0x2", "1000000"]
+              expect_success: true
+
+      - name: Verify Gas Test Failed
+        run: |
+          if [ "${{ steps.gas-test.outcome }}" == "failure" ]; then
+            echo "Gas threshold test correctly failed"
+          else
+            echo "::error::Gas threshold test should have failed"
+            exit 1
+          fi

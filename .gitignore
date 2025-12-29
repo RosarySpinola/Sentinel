@@ -1,0 +1,108 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+.next/
+out/
+dist/
+build/
+target/
+
+# Environment files - CRITICAL: Never commit these
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
+*.env
+.env*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+Thumbs.db
+ehthumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+logs/
+
+# Testing
+coverage/
+.playwright-data/
+playwright-report/
+playwright/.cache/
+test-results/
+.nyc_output/
+
+# Move
+move/build/
+*.mv
+
+# Rust
+Cargo.lock
+**/*.rs.bk
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Misc
+*.pem
+*.key
+*.cert
+.vercel
+.turbo
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+
+# Secrets and credentials - CRITICAL
+secrets/
+credentials/
+*.secret
+*_secret*
+*_credentials*
+.secrets
+*.credential
+serviceAccountKey.json
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Debug
+debug/
+*.dmp
+
+# Sentry
+.sentryclirc
+
+# MCP and Playwright state
+.playwright-mcp/
+.playwright-data/
+
+# Lock files (keep package-lock.json for npm)
+yarn.lock
+pnpm-lock.yaml

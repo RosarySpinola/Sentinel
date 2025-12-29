@@ -1,0 +1,286 @@
+name: 'Sentinel CI'
+description: 'Run Move Prover and transaction simulations for Movement Network'
+author: 'Sentinel'
+
+branding:
+  icon: 'shield'
+  color: 'purple'
+
+inputs:
+  api_url:
+    description: 'Sentinel API URL'
+    required: true
+    default: 'https://api.sentinel.dev'
+  api_key:
+    description: 'Sentinel API key'
+    required: true
+  project_path:
+    description: 'Path to Move project'
+    required: true
+    default: '.'
+  network:
+    description: 'Network to simulate on'
+    required: false
+    default: 'testnet'
+  run_prover:
+    description: 'Run Move Prover'
+    required: false
+    default: 'true'
+  run_simulation:
+    description: 'Run simulations'
+    required: false
+    default: 'true'
+  gas_threshold:
+    description: 'Max gas threshold'
+    required: false
+  scenarios:
+    description: 'YAML simulation scenarios'
+    required: false
+  fail_on_prover_error:
+    description: 'Fail on prover errors'
+    required: false
+    default: 'true'
+
+outputs:
+  prover_status:
+    description: 'Prover result'
+    value: ${{ steps.outputs.outputs.prover_status }}
+  simulation_status:
+    description: 'Simulation result'
+    value: ${{ steps.outputs.outputs.simulation_status }}
+  gas_report:
+    description: 'Gas usage report'
+    value: ${{ steps.outputs.outputs.gas_report }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Setup Move CLI
+      shell: bash
+      run: |
+        if ! command -v aptos &> /dev/null; then
+          echo "Installing Aptos CLI..."
+          curl -fsSL "https://aptos.dev/scripts/install_cli.py" | python3
+        fi
+
+    - name: Run Move Prover
+      id: prover
+      if: ${{ inputs.run_prover == 'true' }}
+      shell: bash
+      run: |
+        echo "Running Move Prover on ${{ inputs.project_path }}..."
+        cd ${{ inputs.project_path }}
+
+        # Run prover and capture output
+        set +e
+        aptos move prove 2>&1 | tee prover-output.txt
+        PROVER_EXIT=$?
+        set -e
+
+        if [ $PROVER_EXIT -eq 0 ]; then
+          echo "status=passed" >> $GITHUB_OUTPUT
+          echo "Move Prover: All specs passed"
+        else
+          echo "status=failed" >> $GITHUB_OUTPUT
+          echo "Move Prover: Verification failed"
+          if [ "${{ inputs.fail_on_prover_error }}" == "true" ]; then
+            exit 1
+          fi
+        fi
+
+    - name: Parse Scenarios
+      id: parse-scenarios
+      shell: bash
+      run: |
+        # Parse YAML scenarios into JSON for API
+        SCENARIOS='${{ inputs.scenarios }}'
+
+        if [ -z "$SCENARIOS" ]; then
+          echo "scenarios=[]" >> $GITHUB_OUTPUT
+          echo "skip_simulation=true" >> $GITHUB_OUTPUT
+          exit 0
+        fi
+
+        # Install yq if needed
+        if ! command -v yq &> /dev/null; then
+          wget -qO /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64
+          chmod +x /usr/local/bin/yq
+        fi
+
+        # Parse scenarios to JSON
+        SCENARIOS_JSON=$(echo "$SCENARIOS" | yq -o=json '.')
+        echo "scenarios=$SCENARIOS_JSON" >> $GITHUB_OUTPUT
+        echo "skip_simulation=false" >> $GITHUB_OUTPUT
+
+    - name: Run Batch Simulation
+      id: simulate
+      if: inputs.run_simulation == 'true' && steps.parse-scenarios.outputs.skip_simulation != 'true'
+      shell: bash
+      env:
+        API_URL: ${{ inputs.api_url }}
+        API_KEY: ${{ inputs.api_key }}
+        NETWORK: ${{ inputs.network }}
+      run: |
+        SCENARIOS='${{ steps.parse-scenarios.outputs.scenarios }}'
+
+        # Build request payload
+        PAYLOAD=$(jq -n \
+          --arg network "$NETWORK" \
+          --argjson scenarios "$SCENARIOS" \
+          '{network: $network, scenarios: $scenarios}')
+
+        echo "Calling batch simulation API..."
+
+        # Call batch simulation API
+        set +e
+        RESPONSE=$(curl -sf -X POST "${API_URL}/api/v1/simulate/batch" \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer ${API_KEY}" \
+          -d "$PAYLOAD")
+        CURL_EXIT=$?
+        set -e
+
+        if [ $CURL_EXIT -ne 0 ]; then
+          echo "::error::Batch simulation API call failed"
+          exit 1
+        fi
+
+        # Save response
+        echo "$RESPONSE" > simulation-report.json
+
+        # Extract results
+        TOTAL=$(echo "$RESPONSE" | jq -r '.total')
+        PASSED=$(echo "$RESPONSE" | jq -r '.passed')
+        FAILED=$(echo "$RESPONSE" | jq -r '.failed')
+        MAX_GAS=$(echo "$RESPONSE" | jq -r '.max_gas_used')
+
+        echo "total=$TOTAL" >> $GITHUB_OUTPUT
+        echo "passed=$PASSED" >> $GITHUB_OUTPUT
+        echo "failed=$FAILED" >> $GITHUB_OUTPUT
+        echo "max_gas=$MAX_GAS" >> $GITHUB_OUTPUT
+
+        # Set status
+        if [ "$FAILED" -gt 0 ]; then
+          echo "status=failed" >> $GITHUB_OUTPUT
+        else
+          echo "status=passed" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Check Gas Threshold
+      id: gas-check
+      if: inputs.gas_threshold != ''
+      shell: bash
+      run: |
+        THRESHOLD=${{ inputs.gas_threshold }}
+        MAX_GAS=${{ steps.simulate.outputs.max_gas }}
+
+        if [ -z "$MAX_GAS" ]; then
+          MAX_GAS=0
+        fi
+
+        echo "Gas threshold: $THRESHOLD"
+        echo "Max gas used: $MAX_GAS"
+
+        # Build gas report
+        EXCEEDED=$([ "$MAX_GAS" -gt "$THRESHOLD" ] && echo true || echo false)
+
+        if [ "$THRESHOLD" -gt 0 ]; then
+          PCT=$((MAX_GAS * 100 / THRESHOLD))
+        else
+          PCT=0
+        fi
+
+        GAS_REPORT=$(jq -n \
+          --argjson threshold "$THRESHOLD" \
+          --argjson max_gas "$MAX_GAS" \
+          --argjson exceeded "$EXCEEDED" \
+          --argjson percentage "$PCT" \
+          '{
+            threshold: $threshold,
+            max_gas_used: $max_gas,
+            exceeded: $exceeded,
+            percentage: $percentage
+          }')
+
+        echo "$GAS_REPORT" > gas-report.json
+        echo "gas_report=$GAS_REPORT" >> $GITHUB_OUTPUT
+
+        if [ "$MAX_GAS" -gt "$THRESHOLD" ]; then
+          echo "::error::Gas threshold exceeded! Max gas ($MAX_GAS) > threshold ($THRESHOLD)"
+          echo "exceeded=true" >> $GITHUB_OUTPUT
+          exit 1
+        else
+          echo "Gas usage within threshold"
+          echo "exceeded=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Generate Summary
+      if: always()
+      shell: bash
+      run: |
+        echo "## Sentinel CI Results" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+
+        # Prover results
+        if [ "${{ inputs.run_prover }}" == "true" ]; then
+          echo "### Move Prover" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.prover.outputs.status }}" == "passed" ]; then
+            echo "All specifications verified" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Verification errors found" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "<details><summary>Prover Output</summary>" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            if [ -f prover-output.txt ]; then
+              cat prover-output.txt >> $GITHUB_STEP_SUMMARY
+            fi
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            echo "</details>" >> $GITHUB_STEP_SUMMARY
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Simulation results
+        if [ "${{ inputs.run_simulation }}" == "true" ]; then
+          echo "### Simulation Tests" >> $GITHUB_STEP_SUMMARY
+          PASSED=${{ steps.simulate.outputs.passed }}
+          TOTAL=${{ steps.simulate.outputs.total }}
+
+          if [ "${{ steps.simulate.outputs.status }}" == "passed" ]; then
+            echo "**${PASSED}/${TOTAL} scenarios passed**" >> $GITHUB_STEP_SUMMARY
+          else
+            FAILED=${{ steps.simulate.outputs.failed }}
+            echo "**${FAILED} scenarios failed**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "| Scenario | Status | Gas | Error |" >> $GITHUB_STEP_SUMMARY
+            echo "|----------|--------|-----|-------|" >> $GITHUB_STEP_SUMMARY
+            if [ -f simulation-report.json ]; then
+              jq -r '.results[] | "| \(.name) | \(if .passed then "Pass" else "Fail" end) | \(.gas_used) | \(.failure_reason // "-") |"' simulation-report.json >> $GITHUB_STEP_SUMMARY
+            fi
+          fi
+          echo "" >> $GITHUB_STEP_SUMMARY
+        fi
+
+        # Gas threshold
+        if [ -f "gas-report.json" ]; then
+          echo "### Gas Usage" >> $GITHUB_STEP_SUMMARY
+          MAX_GAS=$(jq -r '.max_gas_used' gas-report.json)
+          THRESHOLD=$(jq -r '.threshold' gas-report.json)
+          PCT=$(jq -r '.percentage' gas-report.json)
+
+          if [ "${{ steps.gas-check.outputs.exceeded }}" == "true" ]; then
+            echo "**Threshold exceeded**: ${MAX_GAS} / ${THRESHOLD} (${PCT}%)" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Within threshold**: ${MAX_GAS} / ${THRESHOLD} (${PCT}%)" >> $GITHUB_STEP_SUMMARY
+          fi
+        fi
+
+    - name: Set Outputs
+      id: outputs
+      if: always()
+      shell: bash
+      run: |
+        echo "prover_status=${{ steps.prover.outputs.status || 'skipped' }}" >> $GITHUB_OUTPUT
+        echo "simulation_status=${{ steps.simulate.outputs.status || 'skipped' }}" >> $GITHUB_OUTPUT
+        echo "gas_report=$(cat gas-report.json 2>/dev/null || echo '{}')" >> $GITHUB_OUTPUT
