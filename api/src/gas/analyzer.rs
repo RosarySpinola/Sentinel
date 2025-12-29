@@ -376,15 +376,13 @@ impl GasAnalyzer {
             )));
         }
 
-        // View functions return successfully - estimate gas based on typical read operation
-        // View functions don't have gas_used in response, so we estimate
-        let estimated_gas = 100u64; // Base gas for view function execution
-
+        // View functions are free - they don't consume gas
+        // They are read-only operations that don't execute on-chain
         Ok(SimulationResult {
             success: true,
-            gas_used: estimated_gas,
-            gas_unit_price: 100,
-            vm_status: "Executed successfully".to_string(),
+            gas_used: 0, // View functions are free
+            gas_unit_price: 0,
+            vm_status: "View function executed successfully (read-only, no gas consumed)".to_string(),
             state_changes: vec![],
             events: vec![],
             error: None,
