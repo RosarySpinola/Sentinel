@@ -297,7 +297,7 @@ export default function ApiDocsPage() {
         </CardHeader>
         <CardContent>
           <CodeBlock
-            code="https://sentinel.movementnetwork.xyz/api"
+            code="https://sentinel-debugger.vercel.app/api"
             language="text"
           />
           <p className="text-muted-foreground text-sm mt-2">
@@ -318,7 +318,7 @@ export default function ApiDocsPage() {
             <code className="bg-muted px-1 rounded">X-API-Key</code> header.
           </p>
           <CodeBlock
-            code={`curl -X POST https://sentinel.movementnetwork.xyz/api/simulate \\
+            code={`curl -X POST https://sentinel-debugger.vercel.app/api/simulate \\
   -H "Content-Type: application/json" \\
   -H "X-API-Key: your-api-key-here" \\
   -d '{"network": "testnet", ...}'`}

@@ -259,6 +259,162 @@ export default function HistoryPage() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Debugger Detail Dialog */}
+      <Dialog
+        open={!!selectedDebuggerRun}
+        onOpenChange={() => setSelectedDebuggerRun(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Debugger Session Details</DialogTitle>
+          </DialogHeader>
+          {selectedDebuggerRun && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-muted-foreground text-sm">Module</p>
+                  <p className="font-mono">{selectedDebuggerRun.moduleName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Function</p>
+                  <p className="font-mono">{selectedDebuggerRun.functionName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Steps</p>
+                  <Badge variant="secondary">{selectedDebuggerRun.totalSteps} steps</Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Gas</p>
+                  <p className="font-mono">{selectedDebuggerRun.totalGas.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Network</p>
+                  <Badge variant="outline">{selectedDebuggerRun.network}</Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Sender</p>
+                  <p className="font-mono text-xs truncate">{selectedDebuggerRun.senderAddress}</p>
+                </div>
+              </div>
+              {selectedDebuggerRun.typeArguments && selectedDebuggerRun.typeArguments.length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Type Arguments</p>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedDebuggerRun.typeArguments.map((arg, i) => (
+                      <Badge key={i} variant="outline" className="font-mono text-xs">
+                        {arg}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedDebuggerRun.arguments && selectedDebuggerRun.arguments.length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Arguments</p>
+                  <ScrollArea className="h-32 rounded border p-4">
+                    <pre className="font-mono text-sm">
+                      {JSON.stringify(selectedDebuggerRun.arguments, null, 2)}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              )}
+              {selectedDebuggerRun.result && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Result</p>
+                  <ScrollArea className="h-64 rounded border p-4">
+                    <pre className="font-mono text-sm">
+                      {JSON.stringify(selectedDebuggerRun.result, null, 2)}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Gas Analysis Detail Dialog */}
+      <Dialog
+        open={!!selectedGasAnalysis}
+        onOpenChange={() => setSelectedGasAnalysis(null)}
+      >
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Gas Analysis Details</DialogTitle>
+          </DialogHeader>
+          {selectedGasAnalysis && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-muted-foreground text-sm">Module</p>
+                  <p className="font-mono">{selectedGasAnalysis.moduleName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Function</p>
+                  <p className="font-mono">{selectedGasAnalysis.functionName}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Total Gas</p>
+                  <p className="font-mono">{selectedGasAnalysis.totalGas.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Suggestions</p>
+                  <Badge variant="secondary">{selectedGasAnalysis.suggestionsCount} suggestions</Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Top Operation</p>
+                  <p className="font-mono text-sm">{selectedGasAnalysis.topOperation}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Top Function</p>
+                  <p className="font-mono text-sm">{selectedGasAnalysis.topFunction}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Network</p>
+                  <Badge variant="outline">{selectedGasAnalysis.network}</Badge>
+                </div>
+                <div>
+                  <p className="text-muted-foreground text-sm">Sender</p>
+                  <p className="font-mono text-xs truncate">{selectedGasAnalysis.senderAddress}</p>
+                </div>
+              </div>
+              {selectedGasAnalysis.typeArguments && selectedGasAnalysis.typeArguments.length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Type Arguments</p>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedGasAnalysis.typeArguments.map((arg, i) => (
+                      <Badge key={i} variant="outline" className="font-mono text-xs">
+                        {arg}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {selectedGasAnalysis.arguments && selectedGasAnalysis.arguments.length > 0 && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Arguments</p>
+                  <ScrollArea className="h-32 rounded border p-4">
+                    <pre className="font-mono text-sm">
+                      {JSON.stringify(selectedGasAnalysis.arguments, null, 2)}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              )}
+              {selectedGasAnalysis.result && (
+                <div>
+                  <p className="text-muted-foreground mb-2 text-sm">Result</p>
+                  <ScrollArea className="h-64 rounded border p-4">
+                    <pre className="font-mono text-sm">
+                      {JSON.stringify(selectedGasAnalysis.result, null, 2)}
+                    </pre>
+                  </ScrollArea>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
