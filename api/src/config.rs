@@ -21,6 +21,9 @@ impl Config {
     pub fn from_env() -> Self {
         dotenvy::dotenv().ok();
 
+        // Set up Move Prover dependencies (Boogie and Z3) if not already configured
+        Self::setup_prover_env();
+
         // Check for Shinami API key
         let shinami_api_key = env::var("SHINAMI_KEY").ok();
 
@@ -70,5 +73,64 @@ impl Config {
     /// Returns the Shinami API key if configured
     pub fn get_shinami_api_key(&self) -> Option<&str> {
         self.shinami_api_key.as_deref()
+    }
+
+    /// Set up Move Prover environment variables (Boogie and Z3)
+    fn setup_prover_env() {
+        // Set DOTNET_ROOT for Boogie to find .NET runtime
+        if env::var("DOTNET_ROOT").is_err() {
+            let dotnet_paths = [
+                "/opt/homebrew/opt/dotnet@8/libexec",
+                "/usr/local/share/dotnet",
+                "/opt/homebrew/opt/dotnet/libexec",
+            ];
+
+            for path in &dotnet_paths {
+                if std::path::Path::new(path).exists() {
+                    env::set_var("DOTNET_ROOT", path);
+                    tracing::info!("DOTNET_ROOT set to: {}", path);
+                    break;
+                }
+            }
+        }
+
+        // Set BOOGIE_EXE if not already set
+        if env::var("BOOGIE_EXE").is_err() {
+            // Try common locations for Boogie
+            let home = env::var("HOME").unwrap_or_default();
+            let boogie_paths = [
+                format!("{}/.dotnet/tools/boogie", home),
+                "/usr/local/bin/boogie".to_string(),
+                "/opt/homebrew/bin/boogie".to_string(),
+            ];
+
+            for path in &boogie_paths {
+                if std::path::Path::new(path).exists() {
+                    env::set_var("BOOGIE_EXE", path);
+                    tracing::info!("BOOGIE_EXE set to: {}", path);
+                    break;
+                }
+            }
+        }
+
+        // Set Z3_EXE if not already set
+        // Move Prover requires Z3 <= 4.11.2, so prioritize that version
+        if env::var("Z3_EXE").is_err() {
+            let home = env::var("HOME").unwrap_or_default();
+            let z3_paths = [
+                format!("{}/.local/opt/z3-4.11.2/bin/z3", home),
+                "/opt/homebrew/bin/z3".to_string(),
+                "/usr/local/bin/z3".to_string(),
+                "/usr/bin/z3".to_string(),
+            ];
+
+            for path in &z3_paths {
+                if std::path::Path::new(path).exists() {
+                    env::set_var("Z3_EXE", path);
+                    tracing::info!("Z3_EXE set to: {}", path);
+                    break;
+                }
+            }
+        }
     }
 }
