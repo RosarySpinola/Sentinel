@@ -1,6 +1,8 @@
 import type {
   SimulationHistory,
   ProverRunHistory,
+  DebuggerHistory,
+  GasAnalysisHistory,
   HistoryFilters,
   PaginatedResponse,
 } from "@/lib/types/history";
@@ -155,6 +157,114 @@ export async function saveProverRun(
   });
   if (!response.ok) {
     throw new Error("Failed to save prover run");
+  }
+  return response.json();
+}
+
+export async function listDebuggerRuns(
+  filters?: HistoryFilters,
+  options?: HistoryServiceOptions
+): Promise<PaginatedResponse<DebuggerHistory>> {
+  const params = new URLSearchParams();
+  if (filters?.projectId) params.set("projectId", filters.projectId);
+  if (filters?.limit) params.set("limit", String(filters.limit));
+  if (filters?.offset) params.set("offset", String(filters.offset));
+
+  const headers: HeadersInit = {};
+  if (options?.walletAddress) {
+    headers["x-wallet-address"] = options.walletAddress;
+  }
+
+  const response = await fetch(
+    `${API_BASE}/api/history/debugger-runs?${params}`,
+    {
+      credentials: "include",
+      headers,
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch debugger runs");
+  }
+  return response.json();
+}
+
+export interface SaveDebuggerRunData
+  extends Omit<DebuggerHistory, "id" | "createdAt"> {
+  walletAddress?: string;
+}
+
+export async function saveDebuggerRun(
+  data: SaveDebuggerRunData
+): Promise<DebuggerHistory> {
+  const { walletAddress, ...rest } = data;
+
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (walletAddress) {
+    headers["x-wallet-address"] = walletAddress;
+  }
+
+  const response = await fetch(`${API_BASE}/api/history/debugger-runs`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(rest),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to save debugger run");
+  }
+  return response.json();
+}
+
+export async function listGasAnalyses(
+  filters?: HistoryFilters,
+  options?: HistoryServiceOptions
+): Promise<PaginatedResponse<GasAnalysisHistory>> {
+  const params = new URLSearchParams();
+  if (filters?.projectId) params.set("projectId", filters.projectId);
+  if (filters?.limit) params.set("limit", String(filters.limit));
+  if (filters?.offset) params.set("offset", String(filters.offset));
+
+  const headers: HeadersInit = {};
+  if (options?.walletAddress) {
+    headers["x-wallet-address"] = options.walletAddress;
+  }
+
+  const response = await fetch(
+    `${API_BASE}/api/history/gas-analyses?${params}`,
+    {
+      credentials: "include",
+      headers,
+    }
+  );
+  if (!response.ok) {
+    throw new Error("Failed to fetch gas analyses");
+  }
+  return response.json();
+}
+
+export interface SaveGasAnalysisData
+  extends Omit<GasAnalysisHistory, "id" | "createdAt"> {
+  walletAddress?: string;
+}
+
+export async function saveGasAnalysis(
+  data: SaveGasAnalysisData
+): Promise<GasAnalysisHistory> {
+  const { walletAddress, ...rest } = data;
+
+  const headers: HeadersInit = { "Content-Type": "application/json" };
+  if (walletAddress) {
+    headers["x-wallet-address"] = walletAddress;
+  }
+
+  const response = await fetch(`${API_BASE}/api/history/gas-analyses`, {
+    method: "POST",
+    headers,
+    credentials: "include",
+    body: JSON.stringify(rest),
+  });
+  if (!response.ok) {
+    throw new Error("Failed to save gas analysis");
   }
   return response.json();
 }

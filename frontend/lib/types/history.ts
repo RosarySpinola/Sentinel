@@ -28,6 +28,40 @@ export interface ProverRunHistory {
   result?: Record<string, unknown>;
 }
 
+export interface DebuggerHistory {
+  id: string;
+  projectId?: string;
+  network: string;
+  senderAddress: string;
+  moduleAddress: string;
+  moduleName: string;
+  functionName: string;
+  typeArguments?: string[];
+  arguments?: unknown[];
+  totalSteps: number;
+  totalGas: number;
+  createdAt: string;
+  result?: Record<string, unknown>;
+}
+
+export interface GasAnalysisHistory {
+  id: string;
+  projectId?: string;
+  network: string;
+  senderAddress: string;
+  moduleAddress: string;
+  moduleName: string;
+  functionName: string;
+  typeArguments?: string[];
+  arguments?: unknown[];
+  totalGas: number;
+  topOperation: string;
+  topFunction: string;
+  suggestionsCount: number;
+  createdAt: string;
+  result?: Record<string, unknown>;
+}
+
 export interface HistoryFilters {
   projectId?: string;
   limit?: number;

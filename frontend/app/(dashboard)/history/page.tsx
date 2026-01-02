@@ -5,10 +5,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SimulationTable } from "./components/simulation-table";
 import { ProverTable } from "./components/prover-table";
-import { useSimulationHistory, useProverRunHistory } from "./hooks/use-history";
+import { DebuggerTable } from "./components/debugger-table";
+import { GasTable } from "./components/gas-table";
+import { useSimulationHistory, useProverRunHistory, useDebuggerHistory, useGasAnalysisHistory } from "./hooks/use-history";
 import { useProject } from "@/lib/contexts/project-context";
 import { useRouter } from "next/navigation";
-import type { SimulationHistory, ProverRunHistory } from "@/lib/types/history";
+import type { SimulationHistory, ProverRunHistory, DebuggerHistory, GasAnalysisHistory } from "@/lib/types/history";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +25,17 @@ export default function HistoryPage() {
   const { selectedProject } = useProject();
   const { simulations, isLoading: simsLoading } = useSimulationHistory();
   const { proverRuns, isLoading: proverLoading } = useProverRunHistory();
+  const { debuggerRuns, isLoading: debugLoading } = useDebuggerHistory();
+  const { gasAnalyses, isLoading: gasLoading } = useGasAnalysisHistory();
 
   const [selectedSimulation, setSelectedSimulation] =
     useState<SimulationHistory | null>(null);
   const [selectedProverRun, setSelectedProverRun] =
     useState<ProverRunHistory | null>(null);
+  const [selectedDebuggerRun, setSelectedDebuggerRun] =
+    useState<DebuggerHistory | null>(null);
+  const [selectedGasAnalysis, setSelectedGasAnalysis] =
+    useState<GasAnalysisHistory | null>(null);
 
   const handleRerun = (sim: SimulationHistory) => {
     // Navigate to simulator with pre-filled data
@@ -52,6 +60,8 @@ export default function HistoryPage() {
       <Tabs defaultValue="simulations" className="space-y-4">
         <TabsList>
           <TabsTrigger value="simulations">Simulations</TabsTrigger>
+          <TabsTrigger value="debugger">Debugger</TabsTrigger>
+          <TabsTrigger value="gas">Gas Analysis</TabsTrigger>
           <TabsTrigger value="prover">Prover Runs</TabsTrigger>
         </TabsList>
 
@@ -66,6 +76,38 @@ export default function HistoryPage() {
                 onView={setSelectedSimulation}
                 onRerun={handleRerun}
                 isLoading={simsLoading}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="debugger">
+          <Card>
+            <CardHeader>
+              <CardTitle>Debugger History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <DebuggerTable
+                debuggerRuns={debuggerRuns}
+                onView={setSelectedDebuggerRun}
+                onRerun={(run) => router.push(`/debugger?module=${run.moduleAddress}::${run.moduleName}&function=${run.functionName}`)}
+                isLoading={debugLoading}
+              />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="gas">
+          <Card>
+            <CardHeader>
+              <CardTitle>Gas Analysis History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <GasTable
+                gasAnalyses={gasAnalyses}
+                onView={setSelectedGasAnalysis}
+                onRerun={(analysis) => router.push(`/gas?module=${analysis.moduleAddress}::${analysis.moduleName}&function=${analysis.functionName}`)}
+                isLoading={gasLoading}
               />
             </CardContent>
           </Card>
