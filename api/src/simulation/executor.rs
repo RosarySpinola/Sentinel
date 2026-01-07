@@ -21,6 +21,14 @@ impl SimulationExecutor {
     pub async fn execute(&self, request: SimulationRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
 
+        // Convert numeric arguments to strings (Movement/Aptos API requires this for u64, u128, etc.)
+        let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
+            match arg {
+                serde_json::Value::Number(n) => serde_json::Value::String(n.to_string()),
+                other => other.clone(),
+            }
+        }).collect();
+
         // Build the transaction payload
         let payload = serde_json::json!({
             "type": "entry_function_payload",
@@ -31,7 +39,7 @@ impl SimulationExecutor {
                 request.function_name
             ),
             "type_arguments": request.type_args,
-            "arguments": request.args,
+            "arguments": stringified_args,
         });
 
         // Dummy Ed25519 signature for simulation (all zeros)

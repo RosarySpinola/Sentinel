@@ -8,6 +8,7 @@ import {
   AuthProviderWithPrivy,
   AuthProviderNative,
 } from "@/components/auth-provider";
+import { ApiKeyProvider } from "@/lib/contexts/api-key-context";
 import { createContext, useContext, ReactNode } from "react";
 
 // Get Privy App ID from environment
@@ -33,8 +34,10 @@ export function Providers({ children }: { children: ReactNode }) {
         >
           <WalletProvider>
             <AuthProviderNative>
-              {children}
-              <Toaster />
+              <ApiKeyProvider>
+                {children}
+                <Toaster />
+              </ApiKeyProvider>
             </AuthProviderNative>
           </WalletProvider>
         </ThemeProvider>
@@ -58,8 +61,10 @@ export function Providers({ children }: { children: ReactNode }) {
             }}
           >
             <AuthProviderWithPrivy>
-              {children}
-              <Toaster />
+              <ApiKeyProvider>
+                {children}
+                <Toaster />
+              </ApiKeyProvider>
             </AuthProviderWithPrivy>
           </PrivyProvider>
         </WalletProvider>

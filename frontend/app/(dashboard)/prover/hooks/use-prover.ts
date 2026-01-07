@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { ProverResult, UseProverReturn } from "../types";
+import { useApiKey } from "@/lib/contexts/api-key-context";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -9,8 +10,14 @@ export function useProver(): UseProverReturn {
   const [result, setResult] = useState<ProverResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { apiKey } = useApiKey();
 
   const runProver = useCallback(async (code: string, moduleName: string) => {
+    if (!apiKey) {
+      setError("No API key configured. Please create one in Settings > API Keys.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -18,7 +25,10 @@ export function useProver(): UseProverReturn {
     try {
       const response = await fetch(`${API_BASE}/api/v1/prove`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+        },
         body: JSON.stringify({
           move_code: code,
           module_name: moduleName,
@@ -43,7 +53,7 @@ export function useProver(): UseProverReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [apiKey]);
 
   const clear = useCallback(() => {
     setResult(null);
