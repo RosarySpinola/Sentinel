@@ -87,9 +87,9 @@ export function DashboardHeader() {
           value={network}
           onValueChange={(value: NetworkType) => setNetwork(value)}
         >
-          <SelectTrigger className="w-[180px]">
-            <Globe className="mr-2 h-4 w-4" />
-            <SelectValue />
+          <SelectTrigger className="w-[200px]">
+            <Globe className="mr-2 h-4 w-4 shrink-0" />
+            <SelectValue placeholder="Select Network" />
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="testnet">Movement Testnet</SelectItem>
