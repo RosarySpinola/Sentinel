@@ -12,6 +12,9 @@ import {
   Lightbulb,
   Copy,
   Check,
+  ChevronDown,
+  ChevronUp,
+  Code,
 } from "lucide-react";
 import { SimulationResult } from "../types";
 import { StateDiffView } from "./state-diff-view";
@@ -24,8 +27,14 @@ interface SimulationResultsProps {
   error: string | null;
 }
 
-function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
+interface ErrorDisplayProps {
+  parsedError: ParsedError;
+  rawVmStatus: string;
+}
+
+function ErrorDisplay({ parsedError, rawVmStatus }: ErrorDisplayProps) {
   const [copied, setCopied] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
 
   const copyError = () => {
     const errorText = [
@@ -33,8 +42,10 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
       `Code: ${parsedError.shortCode}`,
       parsedError.module && `Module: ${parsedError.module}`,
       parsedError.category && `Category: ${parsedError.category}`,
+      parsedError.reason !== undefined && `Reason Code: ${parsedError.reason}`,
       `Description: ${parsedError.description}`,
       parsedError.suggestion && `Suggestion: ${parsedError.suggestion}`,
+      `\nRaw VM Status:\n${rawVmStatus}`,
     ]
       .filter(Boolean)
       .join("\n");
@@ -50,25 +61,28 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
           <AlertTriangle className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
-          <div className="space-y-1">
+          <div className="space-y-1.5">
             <p className="text-destructive text-base font-semibold">
               {parsedError.description}
             </p>
-            {/* Module & Category Tags */}
-            {(parsedError.module || parsedError.category) && (
-              <div className="flex flex-wrap gap-1.5">
-                {parsedError.module && (
-                  <span className="bg-muted/80 rounded px-2 py-0.5 font-mono text-xs">
-                    {parsedError.module}
-                  </span>
-                )}
-                {parsedError.category && (
-                  <span className="bg-muted/80 text-muted-foreground rounded px-2 py-0.5 text-xs">
-                    {parsedError.category}
-                  </span>
-                )}
-              </div>
-            )}
+            {/* Module & Category & Reason Tags */}
+            <div className="flex flex-wrap gap-1.5">
+              {parsedError.module && (
+                <Badge variant="outline" className="font-mono text-xs">
+                  {parsedError.module}
+                </Badge>
+              )}
+              {parsedError.category && (
+                <Badge variant="secondary" className="text-xs">
+                  {parsedError.category}
+                </Badge>
+              )}
+              {parsedError.reason !== undefined && (
+                <Badge variant="secondary" className="font-mono text-xs">
+                  Code: {parsedError.reason}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
         <button
@@ -84,7 +98,7 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
         </button>
       </div>
 
-      {/* Suggestion - More Prominent */}
+      {/* Suggestion */}
       {parsedError.suggestion && (
         <div className="bg-yellow-500/10 border-yellow-500/30 flex items-start gap-2.5 rounded-md border p-3">
           <Lightbulb className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500" />
@@ -98,6 +112,61 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
           </div>
         </div>
       )}
+
+      {/* Technical Details - Collapsible */}
+      <div className="border-t border-destructive/20 pt-3">
+        <button
+          onClick={() => setShowDetails(!showDetails)}
+          className="text-muted-foreground hover:text-foreground flex w-full items-center justify-between text-sm transition-colors"
+        >
+          <span className="flex items-center gap-2">
+            <Code className="h-4 w-4" />
+            Technical Details
+          </span>
+          {showDetails ? (
+            <ChevronUp className="h-4 w-4" />
+          ) : (
+            <ChevronDown className="h-4 w-4" />
+          )}
+        </button>
+
+        {showDetails && (
+          <div className="mt-3 space-y-2">
+            {/* Error Type */}
+            <div className="grid grid-cols-[100px_1fr] gap-2 text-xs">
+              <span className="text-muted-foreground">Error Type:</span>
+              <span className="font-mono">{parsedError.shortCode}</span>
+            </div>
+            {parsedError.module && (
+              <div className="grid grid-cols-[100px_1fr] gap-2 text-xs">
+                <span className="text-muted-foreground">Module:</span>
+                <span className="font-mono">{parsedError.module}</span>
+              </div>
+            )}
+            {parsedError.category && (
+              <div className="grid grid-cols-[100px_1fr] gap-2 text-xs">
+                <span className="text-muted-foreground">Category:</span>
+                <span>{parsedError.category}</span>
+              </div>
+            )}
+            {parsedError.reason !== undefined && (
+              <div className="grid grid-cols-[100px_1fr] gap-2 text-xs">
+                <span className="text-muted-foreground">Abort Code:</span>
+                <span className="font-mono">{parsedError.reason}</span>
+              </div>
+            )}
+            {/* Raw VM Status */}
+            <div className="mt-2">
+              <span className="text-muted-foreground text-xs">
+                Raw VM Status:
+              </span>
+              <pre className="bg-muted/50 mt-1 overflow-x-auto rounded p-2 font-mono text-xs break-all whitespace-pre-wrap">
+                {rawVmStatus}
+              </pre>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -188,7 +257,7 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
 
         {/* Parsed Error Details */}
         {!result.success && parsedError && (
-          <ErrorDisplay parsedError={parsedError} />
+          <ErrorDisplay parsedError={parsedError} rawVmStatus={result.vmStatus} />
         )}
 
         {/* Tabs for State Changes, Events, Raw */}
