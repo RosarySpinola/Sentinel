@@ -4,22 +4,27 @@ Sentinel is Tenderly for Movement — a transaction simulator, debugger, and for
 
 ---
 
-## Git Configuration (MANDATORY)
+## Git Configuration
 
-**ALWAYS use these credentials for ALL commits and pushes:**
-
-| Setting | Value |
-|---------|-------|
-| **User Name** | `gabrielantonyxaviour` |
-| **User Email** | `gabrielantony56@gmail.com` |
-
-Before making any commits, ALWAYS run:
-```bash
-git config user.name "gabrielantonyxaviour"
-git config user.email "gabrielantony56@gmail.com"
+**Account:** RosarySpinola (Rosary)
+```
+user.name: RosarySpinola
+user.email: mocatproject10@gmail.com
 ```
 
-**DO NOT use any other git identity for this project.**
+### Auto-Commit Rule
+**IMPORTANT:** After EVERY response that modifies code/files, you MUST run:
+```bash
+cd /Users/gabrielantonyxaviour/Documents/starters/movement/Sentinel && \
+git add -A && \
+git commit -m "$(cat <<'EOF'
+<concise description of changes>
+EOF
+)" && \
+git push
+```
+
+This ensures all changes are tracked and pushed to RosarySpinola/Sentinel.
 
 ---
 
