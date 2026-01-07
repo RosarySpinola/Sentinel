@@ -1,12 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import {
   Zap,
   Bug,
-  ShieldCheck,
   Fuel,
   ChevronLeft,
   ChevronRight,
@@ -15,6 +15,7 @@ import {
   Users,
   Key,
   Settings,
+  ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -80,27 +81,40 @@ export function DashboardSidebar() {
   return (
     <aside
       className={cn(
-        "h-full bg-card border-r border-border flex flex-col transition-all duration-300",
+        "bg-card border-border flex h-full flex-col border-r transition-all duration-300",
         collapsed ? "w-16" : "w-64"
       )}
     >
       {/* Logo */}
-      <div className="h-16 flex items-center justify-between px-4 border-b border-border">
+      <div className="border-border flex h-16 items-center justify-between border-b px-4">
         {!collapsed && (
-          <Link href="/" className="flex items-center gap-2">
-            <ShieldCheck className="h-6 w-6 text-primary" />
-            <span className="font-bold text-lg">Sentinel</span>
+          <Link href="/" className="flex items-center">
+            <Image
+              src="/sentinel-logo-text.png"
+              alt="Sentinel"
+              width={180}
+              height={44}
+              className="h-11 w-auto"
+              priority
+            />
           </Link>
         )}
         {collapsed && (
           <Link href="/" className="mx-auto">
-            <ShieldCheck className="h-6 w-6 text-primary" />
+            <Image
+              src="/sentinel-logo.png"
+              alt="Sentinel"
+              width={32}
+              height={32}
+              className="h-7 w-7"
+              priority
+            />
           </Link>
         )}
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 space-y-2 overflow-y-auto p-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href;
           return (
@@ -108,21 +122,23 @@ export function DashboardSidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200",
                 "hover:bg-accent hover:text-accent-foreground",
                 isActive
                   ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground"
+                  : "text-foreground"
               )}
             >
               <item.icon className="h-5 w-5 flex-shrink-0" />
               {!collapsed && (
                 <div className="flex flex-col">
-                  <span className="font-medium text-sm">{item.title}</span>
+                  <span className="text-sm font-medium">{item.title}</span>
                   <span
                     className={cn(
                       "text-xs",
-                      isActive ? "text-primary-foreground/80" : "text-muted-foreground"
+                      isActive
+                        ? "text-primary-foreground/80"
+                        : "text-muted-foreground"
                     )}
                   >
                     {item.description}
@@ -134,9 +150,9 @@ export function DashboardSidebar() {
         })}
 
         {/* Settings Section */}
-        <div className="pt-4 mt-4 border-t border-border">
+        <div className="border-border mt-4 border-t pt-4">
           {!collapsed && (
-            <div className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-muted-foreground uppercase tracking-wider">
+            <div className="text-muted-foreground flex items-center gap-2 px-3 py-2 text-xs font-medium tracking-wider uppercase">
               <Settings className="h-3 w-3" />
               Settings
             </div>
@@ -148,21 +164,23 @@ export function DashboardSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200",
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 transition-all duration-200",
                   "hover:bg-accent hover:text-accent-foreground",
                   isActive
                     ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
+                    : "text-foreground"
                 )}
               >
                 <item.icon className="h-5 w-5 flex-shrink-0" />
                 {!collapsed && (
                   <div className="flex flex-col">
-                    <span className="font-medium text-sm">{item.title}</span>
+                    <span className="text-sm font-medium">{item.title}</span>
                     <span
                       className={cn(
                         "text-xs",
-                        isActive ? "text-primary-foreground/80" : "text-muted-foreground"
+                        isActive
+                          ? "text-primary-foreground/80"
+                          : "text-muted-foreground"
                       )}
                     >
                       {item.description}
@@ -176,7 +194,7 @@ export function DashboardSidebar() {
       </nav>
 
       {/* Collapse button */}
-      <div className="p-4 border-t border-border">
+      <div className="border-border border-t p-4">
         <Button
           variant="ghost"
           size="sm"

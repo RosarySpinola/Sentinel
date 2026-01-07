@@ -25,7 +25,10 @@ import type { CreateApiKeyResponse } from "@/lib/services/api-keys-service";
 interface CreateApiKeyDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onCreate: (name: string, expiresInDays?: number) => Promise<CreateApiKeyResponse>;
+  onCreate: (
+    name: string,
+    expiresInDays?: number
+  ) => Promise<CreateApiKeyResponse>;
   newKey: CreateApiKeyResponse | null;
   onClearNewKey: () => void;
   onCopy: (text: string) => void;
@@ -57,7 +60,8 @@ export function CreateApiKeyDialog({
 
     setIsLoading(true);
     try {
-      const expiresInDays = expiration === "never" ? undefined : parseInt(expiration);
+      const expiresInDays =
+        expiration === "never" ? undefined : parseInt(expiration);
       await onCreate(name.trim(), expiresInDays);
     } finally {
       setIsLoading(false);
@@ -92,16 +96,17 @@ export function CreateApiKeyDialog({
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="flex items-center gap-2 p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
-              <AlertTriangle className="h-5 w-5 text-yellow-500 flex-shrink-0" />
+            <div className="flex items-center gap-2 rounded-lg border border-yellow-500/20 bg-yellow-500/10 p-3">
+              <AlertTriangle className="h-5 w-5 flex-shrink-0 text-yellow-500" />
               <p className="text-sm text-yellow-500">
-                Make sure to copy your API key now. This is the only time you'll see it.
+                Make sure to copy your API key now. This is the only time you'll
+                see it.
               </p>
             </div>
             <div className="space-y-2">
               <Label>API Key</Label>
               <div className="flex gap-2">
-                <code className="flex-1 p-3 bg-muted rounded-lg text-sm break-all font-mono">
+                <code className="bg-muted flex-1 rounded-lg p-3 font-mono text-sm break-all">
                   {newKey.key}
                 </code>
                 <Button variant="outline" size="icon" onClick={handleCopy}>
@@ -141,7 +146,7 @@ export function CreateApiKeyDialog({
               placeholder="My API Key"
               required
             />
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               A name to help you identify this key.
             </p>
           </div>
@@ -161,7 +166,11 @@ export function CreateApiKeyDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>

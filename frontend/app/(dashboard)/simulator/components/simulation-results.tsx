@@ -19,13 +19,13 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
     return (
       <Card className="border-destructive">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-destructive">
+          <CardTitle className="text-destructive flex items-center gap-2">
             <XCircle className="h-5 w-5" />
             Simulation Error
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-destructive">{error}</p>
+          <p className="text-destructive text-sm">{error}</p>
         </CardContent>
       </Card>
     );
@@ -38,7 +38,7 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
           <CardTitle className="text-muted-foreground">Results</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             Run a simulation to see results here
           </p>
         </CardContent>
@@ -60,7 +60,7 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
               </>
             ) : (
               <>
-                <XCircle className="h-5 w-5 text-destructive" />
+                <XCircle className="text-destructive h-5 w-5" />
                 <span className="text-destructive">Failed</span>
               </>
             )}
@@ -80,24 +80,24 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
               {result.gasUsed.toLocaleString()} / 100,000
             </span>
           </div>
-          <div className="h-2 bg-secondary rounded-full overflow-hidden">
+          <div className="bg-secondary h-2 overflow-hidden rounded-full">
             <div
-              className="h-full bg-primary transition-all"
+              className="bg-primary h-full transition-all"
               style={{ width: `${gasPercentage}%` }}
             />
           </div>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-muted-foreground text-xs">
             Gas Unit Price: {result.gasUnitPrice}
           </p>
         </div>
 
         {/* Error Details */}
         {result.error && (
-          <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20">
-            <p className="text-sm font-medium text-destructive">
+          <div className="bg-destructive/10 border-destructive/20 rounded-lg border p-3">
+            <p className="text-destructive text-sm font-medium">
               {result.error.code}
             </p>
-            <p className="text-sm text-destructive/80 mt-1">
+            <p className="text-destructive/80 mt-1 text-sm">
               {result.error.message}
             </p>
           </div>
@@ -129,7 +129,7 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
 
           <TabsContent value="raw" className="mt-4">
             <ScrollArea className="h-[300px]">
-              <pre className="text-xs font-mono p-3 bg-muted rounded-lg overflow-auto">
+              <pre className="bg-muted overflow-auto rounded-lg p-3 font-mono text-xs">
                 {JSON.stringify(result, null, 2)}
               </pre>
             </ScrollArea>

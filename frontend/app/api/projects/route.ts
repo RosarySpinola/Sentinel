@@ -1,29 +1,50 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase/server";
+import { getWalletFromRequest, ensureUser } from "@/lib/api/auth";
 
-// In-memory store for demo (replace with database in production)
-const projectsStore = new Map<string, any[]>();
+export async function GET(request: NextRequest) {
+  const walletAddress = getWalletFromRequest(request);
 
-export async function GET() {
-  const { userId } = await auth();
-
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userProjects = projectsStore.get(userId) || [];
+  const supabase = getSupabase();
+
+  const { data: projects, error } = await supabase
+    .from("sentinel_projects")
+    .select("*")
+    .eq("wallet_address", walletAddress)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching projects:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch projects" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json({
-    projects: userProjects,
-    total: userProjects.length,
+    projects: projects || [],
+    total: projects?.length || 0,
   });
 }
 
-export async function POST(request: Request) {
-  const { userId } = await auth();
+export async function POST(request: NextRequest) {
+  const walletAddress = getWalletFromRequest(request);
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await ensureUser(walletAddress);
+  } catch {
+    return NextResponse.json(
+      { error: "Failed to create user" },
+      { status: 500 }
+    );
   }
 
   const body = await request.json();
@@ -33,20 +54,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Name is required" }, { status: 400 });
   }
 
-  const project = {
-    id: crypto.randomUUID(),
-    name,
-    description: description || null,
-    network,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString(),
-    simulationCount: 0,
-    proverRunCount: 0,
-  };
+  const supabase = getSupabase();
 
-  const userProjects = projectsStore.get(userId) || [];
-  userProjects.push(project);
-  projectsStore.set(userId, userProjects);
+  const { data: project, error } = await supabase
+    .from("sentinel_projects")
+    .insert({
+      wallet_address: walletAddress,
+      name,
+      description: description || null,
+      network,
+    })
+    .select()
+    .single();
+
+  if (error) {
+    console.error("Error creating project:", error);
+    return NextResponse.json(
+      { error: "Failed to create project" },
+      { status: 500 }
+    );
+  }
 
   return NextResponse.json(project, { status: 201 });
 }

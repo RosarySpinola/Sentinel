@@ -23,13 +23,15 @@ import {
 
 export default function ProjectsPage() {
   const router = useRouter();
-  const { projects, isLoading, createProject, updateProject, deleteProject } = useProjects();
+  const { projects, isLoading, createProject, updateProject, deleteProject } =
+    useProjects();
   const { setSelectedProject } = useProject();
 
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [selectedProjectForEdit, setSelectedProjectForEdit] = useState<Project | null>(null);
+  const [selectedProjectForEdit, setSelectedProjectForEdit] =
+    useState<Project | null>(null);
   const [projectToDelete, setProjectToDelete] = useState<Project | null>(null);
 
   const handleProjectClick = (project: Project) => {
@@ -58,12 +60,12 @@ export default function ProjectsPage() {
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="flex items-center justify-between mb-6">
+        <div className="mb-6 flex items-center justify-between">
           <h1 className="text-2xl font-bold">Projects</h1>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="h-40 bg-muted animate-pulse rounded-lg" />
+            <div key={i} className="bg-muted h-40 animate-pulse rounded-lg" />
           ))}
         </div>
       </div>
@@ -72,7 +74,7 @@ export default function ProjectsPage() {
 
   return (
     <div className="p-6">
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <h1 className="text-2xl font-bold">Projects</h1>
         <Button onClick={() => setCreateDialogOpen(true)}>
           <Plus className="mr-2 h-4 w-4" />
@@ -82,10 +84,11 @@ export default function ProjectsPage() {
 
       {projects.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <FolderOpen className="h-12 w-12 text-muted-foreground mb-4" />
-          <h2 className="text-lg font-semibold mb-2">No projects yet</h2>
+          <FolderOpen className="text-muted-foreground mb-4 h-12 w-12" />
+          <h2 className="mb-2 text-lg font-semibold">No projects yet</h2>
           <p className="text-muted-foreground mb-4">
-            Create your first project to organize your simulations and prover runs.
+            Create your first project to organize your simulations and prover
+            runs.
           </p>
           <Button onClick={() => setCreateDialogOpen(true)}>
             <Plus className="mr-2 h-4 w-4" />
@@ -93,7 +96,7 @@ export default function ProjectsPage() {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
           {projects.map((project) => (
             <ProjectCard
               key={project.id}
@@ -128,13 +131,17 @@ export default function ProjectsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete &quot;{projectToDelete?.name}&quot;? This action
-              cannot be undone and will delete all associated simulations and prover runs.
+              Are you sure you want to delete &quot;{projectToDelete?.name}
+              &quot;? This action cannot be undone and will delete all
+              associated simulations and prover runs.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-destructive">
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -11,10 +11,10 @@ export function initSentry() {
   Sentry.init({
     dsn: SENTRY_DSN,
     environment: process.env.NODE_ENV,
-    
+
     // Performance monitoring
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0,
-    
+
     // Session replay for debugging
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
@@ -48,10 +48,7 @@ export function setSentryUser(user: { id: string; email?: string } | null) {
 }
 
 // Helper to capture errors with context
-export function captureError(
-  error: Error,
-  context?: Record<string, unknown>
-) {
+export function captureError(error: Error, context?: Record<string, unknown>) {
   Sentry.captureException(error, {
     extra: context,
   });

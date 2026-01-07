@@ -46,13 +46,15 @@ export function useSimulation() {
         gasUsed: data.gas_used,
         gasUnitPrice: data.gas_unit_price,
         vmStatus: data.vm_status,
-        stateChanges: (data.state_changes || []).map((sc: Record<string, unknown>) => ({
-          address: sc.address,
-          resource: sc.resource,
-          changeType: sc.change_type,
-          before: sc.before,
-          after: sc.after,
-        })),
+        stateChanges: (data.state_changes || []).map(
+          (sc: Record<string, unknown>) => ({
+            address: sc.address,
+            resource: sc.resource,
+            changeType: sc.change_type,
+            before: sc.before,
+            after: sc.after,
+          })
+        ),
         events: (data.events || []).map((e: Record<string, unknown>) => ({
           type: e.type,
           data: e.data,

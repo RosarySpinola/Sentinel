@@ -21,7 +21,9 @@ export async function listTeams(): Promise<Team[]> {
   return data.teams;
 }
 
-export async function getTeam(id: string): Promise<Team & { members: TeamMember[]; invites: TeamInvite[] }> {
+export async function getTeam(
+  id: string
+): Promise<Team & { members: TeamMember[]; invites: TeamInvite[] }> {
   const response = await fetch(`${API_BASE}/api/teams/${id}`, {
     credentials: "include",
   });
@@ -44,7 +46,10 @@ export async function createTeam(input: CreateTeamInput): Promise<Team> {
   return response.json();
 }
 
-export async function updateTeam(id: string, input: UpdateTeamInput): Promise<Team> {
+export async function updateTeam(
+  id: string,
+  input: UpdateTeamInput
+): Promise<Team> {
   const response = await fetch(`${API_BASE}/api/teams/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
@@ -67,7 +72,10 @@ export async function deleteTeam(id: string): Promise<void> {
   }
 }
 
-export async function inviteMember(teamId: string, input: InviteMemberInput): Promise<TeamInvite> {
+export async function inviteMember(
+  teamId: string,
+  input: InviteMemberInput
+): Promise<TeamInvite> {
   const response = await fetch(`${API_BASE}/api/teams/${teamId}/members`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -80,23 +88,36 @@ export async function inviteMember(teamId: string, input: InviteMemberInput): Pr
   return response.json();
 }
 
-export async function removeMember(teamId: string, userId: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/teams/${teamId}/members/${userId}`, {
-    method: "DELETE",
-    credentials: "include",
-  });
+export async function removeMember(
+  teamId: string,
+  userId: string
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/teams/${teamId}/members/${userId}`,
+    {
+      method: "DELETE",
+      credentials: "include",
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to remove member");
   }
 }
 
-export async function updateMemberRole(teamId: string, userId: string, role: TeamRole): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/teams/${teamId}/members/${userId}`, {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
-    body: JSON.stringify({ role }),
-  });
+export async function updateMemberRole(
+  teamId: string,
+  userId: string,
+  role: TeamRole
+): Promise<void> {
+  const response = await fetch(
+    `${API_BASE}/api/teams/${teamId}/members/${userId}`,
+    {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ role }),
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to update member role");
   }

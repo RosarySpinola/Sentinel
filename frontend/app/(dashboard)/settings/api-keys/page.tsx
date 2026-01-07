@@ -1,7 +1,13 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useApiKeys } from "./hooks/use-api-keys";
@@ -9,21 +15,28 @@ import { ApiKeyList } from "./components/api-key-list";
 import { CreateApiKeyDialog } from "./components/create-api-key-dialog";
 
 export default function ApiKeysPage() {
-  const { apiKeys, isLoading, newKey, createKey, deleteKey, clearNewKey, copyToClipboard } =
-    useApiKeys();
+  const {
+    apiKeys,
+    isLoading,
+    newKey,
+    createKey,
+    deleteKey,
+    clearNewKey,
+    copyToClipboard,
+  } = useApiKeys();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   if (isLoading) {
     return (
       <div className="p-6">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded mb-6" />
-        <div className="h-64 bg-muted animate-pulse rounded" />
+        <div className="bg-muted mb-6 h-8 w-48 animate-pulse rounded" />
+        <div className="bg-muted h-64 animate-pulse rounded" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">API Keys</h1>
@@ -41,8 +54,8 @@ export default function ApiKeysPage() {
         <CardHeader>
           <CardTitle>Your API Keys</CardTitle>
           <CardDescription>
-            API keys are used to authenticate requests to the Sentinel API. Keep your keys secure
-            and never share them publicly.
+            API keys are used to authenticate requests to the Sentinel API. Keep
+            your keys secure and never share them publicly.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -57,21 +70,21 @@ export default function ApiKeysPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <h4 className="font-medium mb-2">Authorization Header</h4>
-            <code className="block p-3 bg-muted rounded-lg text-sm">
+            <h4 className="mb-2 font-medium">Authorization Header</h4>
+            <code className="bg-muted block rounded-lg p-3 text-sm">
               Authorization: Bearer stl_live_xxxx...
             </code>
           </div>
           <div>
-            <h4 className="font-medium mb-2">X-API-Key Header</h4>
-            <code className="block p-3 bg-muted rounded-lg text-sm">
+            <h4 className="mb-2 font-medium">X-API-Key Header</h4>
+            <code className="bg-muted block rounded-lg p-3 text-sm">
               X-API-Key: stl_live_xxxx...
             </code>
           </div>
           <div>
-            <h4 className="font-medium mb-2">Example Request</h4>
-            <pre className="p-3 bg-muted rounded-lg text-sm overflow-x-auto">
-{`curl -X POST https://api.sentinel.dev/api/v1/simulate \\
+            <h4 className="mb-2 font-medium">Example Request</h4>
+            <pre className="bg-muted overflow-x-auto rounded-lg p-3 text-sm">
+              {`curl -X POST https://api.sentinel.dev/api/v1/simulate \\
   -H "Authorization: Bearer YOUR_API_KEY" \\
   -H "Content-Type: application/json" \\
   -d '{"network": "testnet", ...}'`}

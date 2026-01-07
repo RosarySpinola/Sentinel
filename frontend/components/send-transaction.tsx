@@ -19,14 +19,14 @@ export function SendTransaction() {
       chainId: 126,
       name: "Movement Mainnet",
       fullnode: "https://full.mainnet.movementinfra.xyz/v1",
-      explorer: "mainnet"
+      explorer: "mainnet",
     },
     testnet: {
       chainId: 250,
       name: "Movement Testnet",
       fullnode: "https://full.testnet.movementinfra.xyz/v1",
-      explorer: "testnet"
-    }
+      explorer: "testnet",
+    },
   };
 
   // Get the current network config based on chain ID
@@ -43,10 +43,10 @@ export function SendTransaction() {
   // Create Aptos client with the current network
   const getAptosClient = () => {
     const networkConfig = getCurrentNetworkConfig();
-    
-    const config = new AptosConfig({ 
+
+    const config = new AptosConfig({
       network: Network.CUSTOM,
-      fullnode: networkConfig.fullnode
+      fullnode: networkConfig.fullnode,
     });
     return new Aptos(config);
   };
@@ -97,7 +97,7 @@ export function SendTransaction() {
       if (aptos) {
         try {
           await aptos.waitForTransaction({ transactionHash: response.hash });
-          
+
           // Success toast with link to explorer
           toast.success(
             <div className="flex flex-col gap-2">
@@ -122,13 +122,15 @@ export function SendTransaction() {
             description: "Check the explorer for status",
             action: {
               label: "View",
-              onClick: () => window.open(getExplorerUrl(response.hash), "_blank"),
+              onClick: () =>
+                window.open(getExplorerUrl(response.hash), "_blank"),
             },
           });
         }
       }
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to send transaction";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to send transaction";
       toast.error(errorMessage, {
         id: loadingToast,
       });
@@ -146,7 +148,7 @@ export function SendTransaction() {
         <p className="text-muted-foreground">
           Send 1 MOVE token to another address.
         </p>
-        
+
         <div className="space-y-2">
           <label className="text-sm font-medium">Recipient Address</label>
           <Input
@@ -157,7 +159,7 @@ export function SendTransaction() {
           />
         </div>
 
-        <Button 
+        <Button
           onClick={handleSendTransaction}
           disabled={isLoading || !account}
           className="w-full"

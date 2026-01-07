@@ -1,7 +1,14 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 import type { PieLabelRenderProps } from "recharts";
 import { OperationGas } from "../types";
 
@@ -35,7 +42,7 @@ export function OperationBreakdown({ operations }: OperationBreakdownProps) {
               cy="50%"
               outerRadius={90}
               label={(props: PieLabelRenderProps) => {
-                const item = data.find(d => d.name === props.name);
+                const item = data.find((d) => d.name === props.name);
                 return `${props.name} (${item?.percentage.toFixed(1) ?? 0}%)`;
               }}
               labelLine={false}
@@ -52,12 +59,12 @@ export function OperationBreakdown({ operations }: OperationBreakdownProps) {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload;
                   return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
+                    <div className="bg-background rounded-lg border p-2 shadow-sm">
                       <div className="font-mono font-medium">{item.name}</div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Gas: {item.value.toLocaleString()}
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Count: {item.count}x
                       </div>
                     </div>

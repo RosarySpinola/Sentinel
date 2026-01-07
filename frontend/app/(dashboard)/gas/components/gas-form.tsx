@@ -5,16 +5,10 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Fuel, Play } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
+import { useNetwork } from "@/lib/contexts/network-context";
 
 interface GasFormProps {
   onAnalyze: (request: GasAnalysisRequest) => Promise<void>;
@@ -23,10 +17,10 @@ interface GasFormProps {
 }
 
 export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
-  const { account, network } = useWallet();
+  const { account } = useWallet();
+  const { network } = useNetwork();
 
   const [formData, setFormData] = useState({
-    network: (network?.chainId === 126 ? "mainnet" : "testnet") as "mainnet" | "testnet",
     sender: "",
     moduleAddress: "0x1",
     moduleName: "aptos_account",
@@ -50,7 +44,7 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
     });
 
     await onAnalyze({
-      network: formData.network,
+      network,
       sender: senderAddress,
       moduleAddress: formData.moduleAddress,
       moduleName: formData.moduleName,
@@ -61,7 +55,8 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
   };
 
   const addArg = () => setArgs([...args, ""]);
-  const removeArg = (index: number) => setArgs(args.filter((_, i) => i !== index));
+  const removeArg = (index: number) =>
+    setArgs(args.filter((_, i) => i !== index));
   const updateArg = (index: number, value: string) => {
     const newArgs = [...args];
     newArgs[index] = value;
@@ -69,7 +64,8 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
   };
 
   const addTypeArg = () => setTypeArgs([...typeArgs, ""]);
-  const removeTypeArg = (index: number) => setTypeArgs(typeArgs.filter((_, i) => i !== index));
+  const removeTypeArg = (index: number) =>
+    setTypeArgs(typeArgs.filter((_, i) => i !== index));
   const updateTypeArg = (index: number, value: string) => {
     const newTypeArgs = [...typeArgs];
     newTypeArgs[index] = value;
@@ -80,38 +76,22 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Fuel className="h-5 w-5 text-primary" />
+          <Fuel className="text-primary h-5 w-5" />
           Gas Analysis Parameters
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <Label>Network</Label>
-              <Select
-                value={formData.network}
-                onValueChange={(v) => setFormData({ ...formData, network: v as "mainnet" | "testnet" })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="testnet">Testnet</SelectItem>
-                  <SelectItem value="mainnet">Mainnet</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label>Sender Address</Label>
-              <Input
-                placeholder="0x..."
-                value={senderAddress}
-                onChange={(e) => setFormData({ ...formData, sender: e.target.value })}
-                className="font-mono text-sm"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label>Sender Address</Label>
+            <Input
+              placeholder="0x..."
+              value={senderAddress}
+              onChange={(e) =>
+                setFormData({ ...formData, sender: e.target.value })
+              }
+              className="font-mono text-sm"
+            />
           </div>
 
           <div className="grid gap-4 md:grid-cols-3">
@@ -120,7 +100,9 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
               <Input
                 placeholder="0x1"
                 value={formData.moduleAddress}
-                onChange={(e) => setFormData({ ...formData, moduleAddress: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, moduleAddress: e.target.value })
+                }
                 className="font-mono text-sm"
               />
             </div>
@@ -130,7 +112,9 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
               <Input
                 placeholder="aptos_account"
                 value={formData.moduleName}
-                onChange={(e) => setFormData({ ...formData, moduleName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, moduleName: e.target.value })
+                }
               />
             </div>
 
@@ -139,7 +123,9 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
               <Input
                 placeholder="transfer"
                 value={formData.functionName}
-                onChange={(e) => setFormData({ ...formData, functionName: e.target.value })}
+                onChange={(e) =>
+                  setFormData({ ...formData, functionName: e.target.value })
+                }
               />
             </div>
           </div>
@@ -147,8 +133,13 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Type Arguments</Label>
-              <Button type="button" variant="ghost" size="sm" onClick={addTypeArg}>
-                <Plus className="h-4 w-4 mr-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={addTypeArg}
+              >
+                <Plus className="mr-1 h-4 w-4" />
                 Add
               </Button>
             </div>
@@ -160,7 +151,12 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
                   onChange={(e) => updateTypeArg(i, e.target.value)}
                   className="font-mono text-sm"
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeArg(i)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeTypeArg(i)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -171,7 +167,7 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
             <div className="flex items-center justify-between">
               <Label>Arguments (JSON format)</Label>
               <Button type="button" variant="ghost" size="sm" onClick={addArg}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="mr-1 h-4 w-4" />
                 Add
               </Button>
             </div>
@@ -183,7 +179,12 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
                   onChange={(e) => updateArg(i, e.target.value)}
                   className="font-mono text-sm"
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeArg(i)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeArg(i)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -191,12 +192,21 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
           </div>
 
           <div className="flex gap-3">
-            <Button type="submit" className="flex-1" disabled={isLoading || !senderAddress}>
-              <Fuel className="h-4 w-4 mr-2" />
+            <Button
+              type="submit"
+              className="flex-1"
+              disabled={isLoading || !senderAddress}
+            >
+              <Fuel className="mr-2 h-4 w-4" />
               {isLoading ? "Analyzing..." : "Analyze Gas"}
             </Button>
-            <Button type="button" variant="outline" onClick={onLoadDemo} disabled={isLoading}>
-              <Play className="h-4 w-4 mr-2" />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onLoadDemo}
+              disabled={isLoading}
+            >
+              <Play className="mr-2 h-4 w-4" />
               Demo
             </Button>
           </div>

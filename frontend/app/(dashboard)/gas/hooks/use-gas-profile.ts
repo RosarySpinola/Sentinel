@@ -16,31 +16,64 @@ const mockGasProfile: GasProfile = {
     { operation: "arithmetic", count: 45, total_gas: 1550, percentage: 12.4 },
   ],
   by_function: [
-    { module: "swap", function: "execute", gas_used: 5200, percentage: 41.8, calls: 1 },
-    { module: "pool", function: "get_reserves", gas_used: 2800, percentage: 22.5, calls: 2 },
-    { module: "math", function: "calc_output", gas_used: 1900, percentage: 15.3, calls: 1 },
-    { module: "token", function: "transfer", gas_used: 1600, percentage: 12.9, calls: 2 },
-    { module: "events", function: "emit_swap", gas_used: 950, percentage: 7.6, calls: 1 },
+    {
+      module: "swap",
+      function: "execute",
+      gas_used: 5200,
+      percentage: 41.8,
+      calls: 1,
+    },
+    {
+      module: "pool",
+      function: "get_reserves",
+      gas_used: 2800,
+      percentage: 22.5,
+      calls: 2,
+    },
+    {
+      module: "math",
+      function: "calc_output",
+      gas_used: 1900,
+      percentage: 15.3,
+      calls: 1,
+    },
+    {
+      module: "token",
+      function: "transfer",
+      gas_used: 1600,
+      percentage: 12.9,
+      calls: 2,
+    },
+    {
+      module: "events",
+      function: "emit_swap",
+      gas_used: 950,
+      percentage: 7.6,
+      calls: 1,
+    },
   ],
   suggestions: [
     {
       severity: "warning",
       message: "Repeated storage reads detected",
-      description: "borrow_global called 8 times on same resource. Consider caching the reference.",
+      description:
+        "borrow_global called 8 times on same resource. Consider caching the reference.",
       location: { module: "swap", function: "execute", line: 45 },
       estimated_savings: 2400,
     },
     {
       severity: "info",
       message: "Vector operations can be batched",
-      description: "12 individual vector_push operations. Consider using vector::append for batch inserts.",
+      description:
+        "12 individual vector_push operations. Consider using vector::append for batch inserts.",
       location: { module: "pool", function: "add_liquidity" },
       estimated_savings: 800,
     },
     {
       severity: "critical",
       message: "Expensive loop detected",
-      description: "Large iteration over vector with 500+ elements. Consider pagination.",
+      description:
+        "Large iteration over vector with 500+ elements. Consider pagination.",
       location: { module: "rewards", function: "distribute" },
       estimated_savings: 5000,
     },
@@ -75,42 +108,45 @@ export function useGasProfile(): UseGasProfileReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const analyzeTransaction = useCallback(async (request: GasAnalysisRequest) => {
-    setIsLoading(true);
-    setError(null);
+  const analyzeTransaction = useCallback(
+    async (request: GasAnalysisRequest) => {
+      setIsLoading(true);
+      setError(null);
 
-    try {
-      const response = await fetch(`${API_BASE}/api/v1/analyze-gas`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          network: request.network,
-          sender: request.sender,
-          module_address: request.moduleAddress,
-          module_name: request.moduleName,
-          function_name: request.functionName,
-          type_args: request.typeArgs,
-          args: request.args,
-        }),
-      });
+      try {
+        const response = await fetch(`${API_BASE}/api/v1/analyze-gas`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            network: request.network,
+            sender: request.sender,
+            module_address: request.moduleAddress,
+            module_name: request.moduleName,
+            function_name: request.functionName,
+            type_args: request.typeArgs,
+            args: request.args,
+          }),
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || "Gas analysis failed");
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.message || "Gas analysis failed");
+        }
+
+        const data = await response.json();
+        setProfile(data);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Analysis failed");
+        // On error, fall back to demo data for development
+        if (process.env.NODE_ENV === "development") {
+          setProfile(mockGasProfile);
+        }
+      } finally {
+        setIsLoading(false);
       }
-
-      const data = await response.json();
-      setProfile(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Analysis failed");
-      // On error, fall back to demo data for development
-      if (process.env.NODE_ENV === "development") {
-        setProfile(mockGasProfile);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   const loadDemo = useCallback(() => {
     setIsLoading(true);

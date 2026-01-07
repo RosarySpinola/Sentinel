@@ -126,7 +126,7 @@ async fn main() {
     let api_key_routes = Router::new()
         .route("/", post(routes::create_api_key))
         .route("/", get(routes::list_api_keys))
-        .route("/:id", delete(routes::delete_api_key));
+        .route("/{id}", delete(routes::delete_api_key));
 
     // Build the main router
     let app = Router::new()

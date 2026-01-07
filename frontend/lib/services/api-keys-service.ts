@@ -30,7 +30,9 @@ export async function listApiKeys(): Promise<ApiKey[]> {
   return data.apiKeys || [];
 }
 
-export async function createApiKey(request: CreateApiKeyRequest): Promise<CreateApiKeyResponse> {
+export async function createApiKey(
+  request: CreateApiKeyRequest
+): Promise<CreateApiKeyResponse> {
   const response = await fetch("/api/settings/api-keys", {
     method: "POST",
     headers: { "Content-Type": "application/json" },

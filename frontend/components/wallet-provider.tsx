@@ -8,14 +8,32 @@ interface WalletProviderProps {
   children: ReactNode;
 }
 
+// Movement Network configurations
+export const MOVEMENT_NETWORKS = {
+  mainnet: {
+    name: "Movement Mainnet",
+    chainId: 126,
+    fullnode: "https://mainnet.movementnetwork.xyz/v1",
+    explorer: "https://explorer.movementnetwork.xyz",
+  },
+  testnet: {
+    name: "Movement Testnet",
+    chainId: 250,
+    fullnode: "https://testnet.movementnetwork.xyz/v1",
+    explorer: "https://explorer.movementnetwork.xyz/testnet",
+  },
+} as const;
+
+// Current network - default to testnet for Privy auth
+export const CURRENT_NETWORK = "testnet" as keyof typeof MOVEMENT_NETWORKS;
+
 export function WalletProvider({ children }: WalletProviderProps) {
-  // Movement Mainnet configuration
-  // Transactions will use their own config based on the connected network
+  // Movement network configuration - use MAINNET for wallet adapter compatibility
   const aptosConfig = new AptosConfig({
     network: Network.MAINNET,
-    fullnode: "https://full.mainnet.movementinfra.xyz/v1",
+    fullnode: MOVEMENT_NETWORKS[CURRENT_NETWORK].fullnode,
   });
-  
+
   return (
     <AptosWalletAdapterProvider
       autoConnect={true}

@@ -48,14 +48,17 @@ export function SignMessage() {
       // Handle different response formats and convert byte array to hex
       let signature: string;
 
-      if (typeof response === 'string') {
+      if (typeof response === "string") {
         signature = response;
       } else if (response.signature) {
         // Try to get hex representation
-        const sig = response.signature as { toString?: () => string; toHexString?: () => string };
-        if (typeof sig.toHexString === 'function') {
+        const sig = response.signature as {
+          toString?: () => string;
+          toHexString?: () => string;
+        };
+        if (typeof sig.toHexString === "function") {
           signature = sig.toHexString();
-        } else if (typeof sig.toString === 'function') {
+        } else if (typeof sig.toString === "function") {
           signature = sig.toString();
         } else {
           signature = JSON.stringify(response.signature);
@@ -63,7 +66,7 @@ export function SignMessage() {
       } else {
         signature = JSON.stringify(response);
       }
-      
+
       setSignedMessage(signature);
 
       toast.success(
@@ -77,7 +80,8 @@ export function SignMessage() {
         }
       );
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : "Failed to sign message";
+      const errorMessage =
+        err instanceof Error ? err.message : "Failed to sign message";
       toast.error(errorMessage, {
         id: loadingToast,
       });
@@ -95,7 +99,7 @@ export function SignMessage() {
         <p className="text-muted-foreground">
           Sign a &quot;gmove&quot; message with your wallet.
         </p>
-        
+
         <div className="space-y-2">
           <label className="text-sm font-medium">Your Name</label>
           <Input
@@ -107,15 +111,15 @@ export function SignMessage() {
         </div>
 
         {signedMessage && (
-          <div className="p-3 rounded-lg bg-muted">
-            <p className="text-xs font-medium mb-1">Signature:</p>
+          <div className="bg-muted rounded-lg p-3">
+            <p className="mb-1 text-xs font-medium">Signature:</p>
             <p className="font-mono text-xs break-all opacity-75">
               {signedMessage}
             </p>
           </div>
         )}
 
-        <Button 
+        <Button
           onClick={handleSignMessage}
           disabled={isLoading || !account || !signMessage}
           className="w-full"

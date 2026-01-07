@@ -86,7 +86,10 @@ export function CreateProjectDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="network">Default Network</Label>
-            <Select value={network} onValueChange={(v) => setNetwork(v as NetworkType)}>
+            <Select
+              value={network}
+              onValueChange={(v) => setNetwork(v as NetworkType)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -98,7 +101,11 @@ export function CreateProjectDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>

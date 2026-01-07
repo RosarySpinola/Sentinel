@@ -23,7 +23,10 @@ export function getNetworkByChainId(chainId: number | undefined) {
   return MOVEMENT_NETWORKS.testnet; // Default to testnet
 }
 
-export function getExplorerUrl(txHash: string, network: NetworkType = "testnet") {
+export function getExplorerUrl(
+  txHash: string,
+  network: NetworkType = "testnet"
+) {
   const config = MOVEMENT_NETWORKS[network];
   return `${config.explorer}/txn/${txHash}?network=${config.explorerParam}`;
 }

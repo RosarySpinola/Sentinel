@@ -19,7 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import type { Project, UpdateProjectInput, NetworkType } from "@/lib/types/project";
+import type {
+  Project,
+  UpdateProjectInput,
+  NetworkType,
+} from "@/lib/types/project";
 
 interface EditProjectDialogProps {
   project: Project | null;
@@ -93,7 +97,10 @@ export function EditProjectDialog({
           </div>
           <div className="space-y-2">
             <Label htmlFor="edit-network">Default Network</Label>
-            <Select value={network} onValueChange={(v) => setNetwork(v as NetworkType)}>
+            <Select
+              value={network}
+              onValueChange={(v) => setNetwork(v as NetworkType)}
+            >
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
@@ -105,7 +112,11 @@ export function EditProjectDialog({
             </Select>
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>

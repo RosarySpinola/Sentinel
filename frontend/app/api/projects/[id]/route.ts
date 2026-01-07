@@ -1,24 +1,28 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-
-// Shared in-memory store (would be database in production)
-const projectsStore = new Map<string, any[]>();
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase/server";
+import { getWalletFromRequest } from "@/lib/api/auth";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const walletAddress = getWalletFromRequest(request);
   const { id } = await params;
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userProjects = projectsStore.get(userId) || [];
-  const project = userProjects.find((p) => p.id === id);
+  const supabase = getSupabase();
 
-  if (!project) {
+  const { data: project, error } = await supabase
+    .from("sentinel_projects")
+    .select("*")
+    .eq("id", id)
+    .eq("wallet_address", walletAddress)
+    .single();
+
+  if (error || !project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
@@ -26,61 +30,65 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const walletAddress = getWalletFromRequest(request);
   const { id } = await params;
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const body = await request.json();
   const { name, description, network } = body;
 
-  const userProjects = projectsStore.get(userId) || [];
-  const projectIndex = userProjects.findIndex((p) => p.id === id);
+  const supabase = getSupabase();
 
-  if (projectIndex === -1) {
+  const { data: project, error } = await supabase
+    .from("sentinel_projects")
+    .update({
+      ...(name && { name }),
+      ...(description !== undefined && { description }),
+      ...(network && { network }),
+    })
+    .eq("id", id)
+    .eq("wallet_address", walletAddress)
+    .select()
+    .single();
+
+  if (error || !project) {
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  const project = userProjects[projectIndex];
-  const updatedProject = {
-    ...project,
-    name: name ?? project.name,
-    description: description ?? project.description,
-    network: network ?? project.network,
-    updatedAt: new Date().toISOString(),
-  };
-
-  userProjects[projectIndex] = updatedProject;
-  projectsStore.set(userId, userProjects);
-
-  return NextResponse.json(updatedProject);
+  return NextResponse.json(project);
 }
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const walletAddress = getWalletFromRequest(request);
   const { id } = await params;
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userProjects = projectsStore.get(userId) || [];
-  const projectIndex = userProjects.findIndex((p) => p.id === id);
+  const supabase = getSupabase();
 
-  if (projectIndex === -1) {
-    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  const { error } = await supabase
+    .from("sentinel_projects")
+    .delete()
+    .eq("id", id)
+    .eq("wallet_address", walletAddress);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to delete project" },
+      { status: 500 }
+    );
   }
-
-  userProjects.splice(projectIndex, 1);
-  projectsStore.set(userId, userProjects);
 
   return NextResponse.json({ success: true });
 }

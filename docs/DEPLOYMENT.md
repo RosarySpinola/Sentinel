@@ -290,3 +290,19 @@ Redis is optional. If unavailable:
 | Clerk | 10K MAU | $25/month (25K MAU) |
 
 **Estimated monthly cost**: $35-65/month for small-medium usage
+
+---
+
+## Quick Deploy Checklist
+
+```
+[ ] 1. Create Clerk app → get CLERK keys
+[ ] 2. Create Railway project → add PostgreSQL → get DATABASE_URL
+[ ] 3. Run migrations: cd api && sqlx migrate run
+[ ] 4. Create Upstash Redis → get REDIS_URL
+[ ] 5. Deploy API to Railway with env vars
+[ ] 6. Deploy Frontend to Vercel with env vars
+[ ] 7. Configure Clerk webhook URL
+[ ] 8. Add GitHub secrets for CI/CD
+[ ] 9. Test: sign up, run simulation, check API health
+```

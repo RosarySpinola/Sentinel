@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useState, useCallback } from 'react';
-import type { ProverResult, UseProverReturn } from '../types';
+import { useState, useCallback } from "react";
+import type { ProverResult, UseProverReturn } from "../types";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export function useProver(): UseProverReturn {
   const [result, setResult] = useState<ProverResult | null>(null);
@@ -17,8 +17,8 @@ export function useProver(): UseProverReturn {
 
     try {
       const response = await fetch(`${API_BASE}/api/v1/prove`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           move_code: code,
           module_name: moduleName,
@@ -29,13 +29,16 @@ export function useProver(): UseProverReturn {
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error(`Prover failed: ${response.status} ${response.statusText}. ${errorText}`);
+        throw new Error(
+          `Prover failed: ${response.status} ${response.statusText}. ${errorText}`
+        );
       }
 
       const data: ProverResult = await response.json();
       setResult(data);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Unknown error occurred';
+      const message =
+        err instanceof Error ? err.message : "Unknown error occurred";
       setError(message);
     } finally {
       setIsLoading(false);

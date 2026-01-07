@@ -7,33 +7,41 @@ import { toast } from "sonner";
 
 export function SwitchNetwork() {
   const { network, wallet } = useWallet();
-  
+
   // Determine current network type - use chain IDs as primary detection
   const isMovementMainnet = network?.chainId === 126;
   const isMovementTestnet = network?.chainId === 250;
   const isMovementNetwork = isMovementMainnet || isMovementTestnet;
   const isNightly = wallet?.name?.toLowerCase().includes("nightly");
 
-  
-  
   const handleSwitchNetwork = async (targetNetwork: "mainnet" | "testnet") => {
-    const networkName = targetNetwork === "mainnet" ? "Movement Mainnet" : "Movement Testnet";
+    const networkName =
+      targetNetwork === "mainnet" ? "Movement Mainnet" : "Movement Testnet";
     const loadingToast = toast.loading(`Switching to ${networkName}...`);
 
     try {
       // Movement Network chain IDs
       const chainId = targetNetwork === "mainnet" ? 126 : 250;
-      
+
       // Check if we're using Nightly wallet
       if (isNightly && typeof window !== "undefined") {
         // Use Nightly's direct API
-        const nightlyWindow = window as Window & { nightly?: { aptos?: { changeNetwork?: (config: { chainId: number; name: string }) => Promise<void> } } };
+        const nightlyWindow = window as Window & {
+          nightly?: {
+            aptos?: {
+              changeNetwork?: (config: {
+                chainId: number;
+                name: string;
+              }) => Promise<void>;
+            };
+          };
+        };
         if (nightlyWindow.nightly?.aptos?.changeNetwork) {
           await nightlyWindow.nightly.aptos.changeNetwork({
             chainId,
-            name: "custom"
+            name: "custom",
           });
-          
+
           // Give some time for the network state to update
           setTimeout(() => {
             toast.success(`Switched to ${networkName}`, {
@@ -43,13 +51,19 @@ export function SwitchNetwork() {
           return;
         }
       }
-      
+
       // No fallback - only Nightly supports Movement network switching
-      toast.error("Network switching not supported. Please use Nightly wallet for network switching.", {
-        id: loadingToast,
-      });
+      toast.error(
+        "Network switching not supported. Please use Nightly wallet for network switching.",
+        {
+          id: loadingToast,
+        }
+      );
     } catch (err: unknown) {
-      const errorMessage = err instanceof Error ? err.message : `Failed to switch to ${networkName}`;
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : `Failed to switch to ${networkName}`;
       toast.error(errorMessage, {
         id: loadingToast,
       });
@@ -67,15 +81,16 @@ export function SwitchNetwork() {
           <p className="font-medium">
             {isMovementMainnet && "Movement Mainnet (Chain ID: 126)"}
             {isMovementTestnet && "Movement Testnet (Chain ID: 250)"}
-            {!isMovementNetwork && `${network?.name || "Unknown"} (Chain ID: ${network?.chainId})`}
+            {!isMovementNetwork &&
+              `${network?.name || "Unknown"} (Chain ID: ${network?.chainId})`}
           </p>
           {!isMovementNetwork && (
-            <p className="text-xs text-orange-500 mt-1">
+            <p className="mt-1 text-xs text-orange-500">
               Switch to Movement network to use Movement dApps
             </p>
           )}
         </div>
-        
+
         {isNightly ? (
           <div className="flex flex-col gap-2">
             {/* If not on Movement network, show both buttons */}
@@ -108,7 +123,7 @@ export function SwitchNetwork() {
                     Switch to Movement Mainnet
                   </Button>
                 )}
-                
+
                 {/* Show Testnet button if on Movement mainnet */}
                 {isMovementMainnet && (
                   <Button
@@ -123,15 +138,19 @@ export function SwitchNetwork() {
             )}
           </div>
         ) : (
-          <div className="text-center space-y-2 py-4">
-            <p className="text-sm text-muted-foreground">
+          <div className="space-y-2 py-4 text-center">
+            <p className="text-muted-foreground text-sm">
               Please manually switch to a Movement network in your wallet:
             </p>
-            <div className="text-xs space-y-1">
-              <p><strong>Movement Mainnet:</strong> Chain ID 126</p>
-              <p><strong>Movement Testnet:</strong> Chain ID 250</p>
+            <div className="space-y-1 text-xs">
+              <p>
+                <strong>Movement Mainnet:</strong> Chain ID 126
+              </p>
+              <p>
+                <strong>Movement Testnet:</strong> Chain ID 250
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground">
+            <p className="text-muted-foreground text-xs">
               Automatic network switching is only available with Nightly wallet
             </p>
           </div>

@@ -5,15 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Bug, Loader2 } from "lucide-react";
 import type { TraceRequest } from "../types";
+import { useNetwork } from "@/lib/contexts/network-context";
 
 interface DebugFormProps {
   onSubmit: (request: TraceRequest) => Promise<void>;
@@ -22,7 +16,7 @@ interface DebugFormProps {
 }
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
-  const [network, setNetwork] = useState<"mainnet" | "testnet">("testnet");
+  const { network } = useNetwork();
   const [sender, setSender] = useState("");
   const [moduleAddress, setModuleAddress] = useState("");
   const [moduleName, setModuleName] = useState("");
@@ -49,33 +43,17 @@ export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   return (
     <Card>
       <CardContent className="py-8">
-        <div className="flex flex-col items-center mb-6">
-          <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-            <Bug className="h-8 w-8 text-primary" />
+        <div className="mb-6 flex flex-col items-center">
+          <div className="bg-primary/10 mb-4 flex h-16 w-16 items-center justify-center rounded-full">
+            <Bug className="text-primary h-8 w-8" />
           </div>
-          <h3 className="text-lg font-semibold mb-1">Start Debug Session</h3>
-          <p className="text-muted-foreground text-sm text-center max-w-md">
+          <h3 className="mb-1 text-lg font-semibold">Start Debug Session</h3>
+          <p className="text-muted-foreground max-w-md text-center text-sm">
             Enter transaction parameters to trace execution step-by-step
           </p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 max-w-lg mx-auto">
-          <div className="space-y-2">
-            <Label>Network</Label>
-            <Select
-              value={network}
-              onValueChange={(v) => setNetwork(v as "mainnet" | "testnet")}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="testnet">Testnet</SelectItem>
-                <SelectItem value="mainnet">Mainnet</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
+        <form onSubmit={handleSubmit} className="mx-auto max-w-lg space-y-4">
           <div className="space-y-2">
             <Label>Module Address</Label>
             <Input
@@ -135,7 +113,7 @@ export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
           </div>
 
           {error && (
-            <div className="text-sm text-destructive bg-destructive/10 p-3 rounded-md">
+            <div className="text-destructive bg-destructive/10 rounded-md p-3 text-sm">
               {error}
             </div>
           )}
@@ -143,7 +121,7 @@ export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Loading Trace...
               </>
             ) : (
