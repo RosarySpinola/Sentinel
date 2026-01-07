@@ -46,20 +46,29 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
 
   return (
     <div className="bg-destructive/10 border-destructive/30 space-y-3 rounded-lg border p-4">
-      {/* Error Header */}
+      {/* Error Header with Description */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-start gap-2">
-          <AlertTriangle className="text-destructive mt-0.5 h-4 w-4 flex-shrink-0" />
-          <div>
-            <p className="text-destructive text-sm font-semibold">
-              {parsedError.title}
+          <AlertTriangle className="text-destructive mt-0.5 h-5 w-5 flex-shrink-0" />
+          <div className="space-y-1">
+            <p className="text-destructive text-base font-semibold">
+              {parsedError.description}
             </p>
-            <Badge
-              variant="outline"
-              className="border-destructive/30 text-destructive mt-1 text-xs"
-            >
-              {parsedError.shortCode}
-            </Badge>
+            {/* Module & Category Tags */}
+            {(parsedError.module || parsedError.category) && (
+              <div className="flex flex-wrap gap-1.5">
+                {parsedError.module && (
+                  <span className="bg-muted/80 rounded px-2 py-0.5 font-mono text-xs">
+                    {parsedError.module}
+                  </span>
+                )}
+                {parsedError.category && (
+                  <span className="bg-muted/80 text-muted-foreground rounded px-2 py-0.5 text-xs">
+                    {parsedError.category}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <button
@@ -75,34 +84,18 @@ function ErrorDisplay({ parsedError }: { parsedError: ParsedError }) {
         </button>
       </div>
 
-      {/* Module & Category */}
-      {(parsedError.module || parsedError.category) && (
-        <div className="flex flex-wrap gap-2 text-xs">
-          {parsedError.module && (
-            <span className="bg-muted rounded px-2 py-1 font-mono">
-              {parsedError.module}
-            </span>
-          )}
-          {parsedError.category && (
-            <span className="bg-muted rounded px-2 py-1">
-              {parsedError.category}
-            </span>
-          )}
-        </div>
-      )}
-
-      {/* Description */}
-      <p className="text-destructive/90 break-words text-sm">
-        {parsedError.description}
-      </p>
-
-      {/* Suggestion */}
+      {/* Suggestion - More Prominent */}
       {parsedError.suggestion && (
-        <div className="bg-muted/50 flex items-start gap-2 rounded-md p-3">
-          <Lightbulb className="mt-0.5 h-4 w-4 flex-shrink-0 text-yellow-500" />
-          <p className="text-muted-foreground text-sm">
-            {parsedError.suggestion}
-          </p>
+        <div className="bg-yellow-500/10 border-yellow-500/30 flex items-start gap-2.5 rounded-md border p-3">
+          <Lightbulb className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-500" />
+          <div>
+            <p className="text-sm font-medium text-yellow-600 dark:text-yellow-400">
+              How to fix
+            </p>
+            <p className="text-foreground mt-0.5 text-sm">
+              {parsedError.suggestion}
+            </p>
+          </div>
         </div>
       )}
     </div>
@@ -196,16 +189,6 @@ export function SimulationResults({ result, error }: SimulationResultsProps) {
         {/* Parsed Error Details */}
         {!result.success && parsedError && (
           <ErrorDisplay parsedError={parsedError} />
-        )}
-
-        {/* Legacy error details (if error object exists but differs) */}
-        {result.error && result.error.message !== parsedError?.description && (
-          <div className="bg-muted/50 rounded-lg border p-3">
-            <p className="text-sm font-medium">{result.error.code}</p>
-            <p className="text-muted-foreground mt-1 break-words text-sm">
-              {result.error.message}
-            </p>
-          </div>
         )}
 
         {/* Tabs for State Changes, Events, Raw */}

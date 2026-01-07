@@ -53,12 +53,12 @@ const COIN_ERRORS: Record<number, string> = {
   8: "Zero coin amount",
 };
 
-// Prologue abort codes
+// Prologue abort codes (from aptos-core/aptos-vm)
 const PROLOGUE_ERRORS: Record<number, string> = {
   1: "Invalid account authentication key",
-  2: "Sequence number too old",
-  3: "Sequence number too new",
-  4: "Account does not exist",
+  2: "Account does not exist",
+  3: "Sequence number too old",
+  4: "Sequence number too new",
   5: "Cannot pay gas deposit",
   6: "Transaction expired",
   7: "Bad chain ID",
@@ -242,13 +242,13 @@ function getSuggestionForPrologueError(reason: number): string {
     case 1:
       return "Check that the sender address has been correctly derived from the authentication key";
     case 2:
-      return "The sequence number is too old. Get the latest sequence number from the account";
+      return "The sender account does not exist on this network. Fund the account with native tokens first using a faucet or transfer.";
     case 3:
-      return "The sequence number is too new. Wait for pending transactions to complete";
+      return "The sequence number is too old. Get the latest sequence number from the account";
     case 4:
-      return "The sender account does not exist on chain. Fund the account first";
+      return "The sequence number is too new. Wait for pending transactions to complete";
     case 5:
-      return "The account doesn't have enough balance to pay for gas";
+      return "The account doesn't have enough balance to pay for gas. Add more funds.";
     case 6:
       return "The transaction has expired. Increase the expiration timestamp";
     case 7:
