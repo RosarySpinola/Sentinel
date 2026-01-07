@@ -18,7 +18,11 @@ interface CreateTeamDialogProps {
   onSubmit: (name: string) => Promise<void>;
 }
 
-export function CreateTeamDialog({ open, onOpenChange, onSubmit }: CreateTeamDialogProps) {
+export function CreateTeamDialog({
+  open,
+  onOpenChange,
+  onSubmit,
+}: CreateTeamDialogProps) {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
@@ -54,7 +58,11 @@ export function CreateTeamDialog({ open, onOpenChange, onSubmit }: CreateTeamDia
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => onOpenChange(false)}
+            >
               Cancel
             </Button>
             <Button type="submit" disabled={isLoading || !name.trim()}>

@@ -1,26 +1,62 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-
-// Shared in-memory store
-const proverRunsStore = new Map<string, any[]>();
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase/server";
+import { getWalletFromRequest } from "@/lib/api/auth";
 
 export async function GET(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const walletAddress = getWalletFromRequest(request);
   const { id } = await params;
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const userRuns = proverRunsStore.get(userId) || [];
-  const proverRun = userRuns.find((r) => r.id === id);
+  const supabase = getSupabase();
 
-  if (!proverRun) {
-    return NextResponse.json({ error: "Prover run not found" }, { status: 404 });
+  const { data: proverRun, error } = await supabase
+    .from("sentinel_prover_runs")
+    .select("*")
+    .eq("id", id)
+    .eq("wallet_address", walletAddress)
+    .single();
+
+  if (error || !proverRun) {
+    return NextResponse.json(
+      { error: "Prover run not found" },
+      { status: 404 }
+    );
   }
 
   return NextResponse.json(proverRun);
+}
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const walletAddress = getWalletFromRequest(request);
+  const { id } = await params;
+
+  if (!walletAddress) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = getSupabase();
+
+  const { error } = await supabase
+    .from("sentinel_prover_runs")
+    .delete()
+    .eq("id", id)
+    .eq("wallet_address", walletAddress);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to delete prover run" },
+      { status: 500 }
+    );
+  }
+
+  return NextResponse.json({ success: true });
 }

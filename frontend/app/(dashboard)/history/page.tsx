@@ -24,8 +24,10 @@ export default function HistoryPage() {
   const { simulations, isLoading: simsLoading } = useSimulationHistory();
   const { proverRuns, isLoading: proverLoading } = useProverRunHistory();
 
-  const [selectedSimulation, setSelectedSimulation] = useState<SimulationHistory | null>(null);
-  const [selectedProverRun, setSelectedProverRun] = useState<ProverRunHistory | null>(null);
+  const [selectedSimulation, setSelectedSimulation] =
+    useState<SimulationHistory | null>(null);
+  const [selectedProverRun, setSelectedProverRun] =
+    useState<ProverRunHistory | null>(null);
 
   const handleRerun = (sim: SimulationHistory) => {
     // Navigate to simulator with pre-filled data
@@ -35,7 +37,7 @@ export default function HistoryPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">History</h1>
@@ -86,7 +88,10 @@ export default function HistoryPage() {
       </Tabs>
 
       {/* Simulation Detail Dialog */}
-      <Dialog open={!!selectedSimulation} onOpenChange={() => setSelectedSimulation(null)}>
+      <Dialog
+        open={!!selectedSimulation}
+        onOpenChange={() => setSelectedSimulation(null)}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Simulation Details</DialogTitle>
@@ -95,29 +100,35 @@ export default function HistoryPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Module</p>
+                  <p className="text-muted-foreground text-sm">Module</p>
                   <p className="font-mono">{selectedSimulation.moduleName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Function</p>
+                  <p className="text-muted-foreground text-sm">Function</p>
                   <p className="font-mono">{selectedSimulation.functionName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
-                  <Badge variant={selectedSimulation.success ? "default" : "destructive"}>
+                  <p className="text-muted-foreground text-sm">Status</p>
+                  <Badge
+                    variant={
+                      selectedSimulation.success ? "default" : "destructive"
+                    }
+                  >
                     {selectedSimulation.success ? "Success" : "Failed"}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Gas Used</p>
-                  <p className="font-mono">{selectedSimulation.gasUsed.toLocaleString()}</p>
+                  <p className="text-muted-foreground text-sm">Gas Used</p>
+                  <p className="font-mono">
+                    {selectedSimulation.gasUsed.toLocaleString()}
+                  </p>
                 </div>
               </div>
               {selectedSimulation.result && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Result</p>
+                  <p className="text-muted-foreground mb-2 text-sm">Result</p>
                   <ScrollArea className="h-64 rounded border p-4">
-                    <pre className="text-sm font-mono">
+                    <pre className="font-mono text-sm">
                       {JSON.stringify(selectedSimulation.result, null, 2)}
                     </pre>
                   </ScrollArea>
@@ -129,7 +140,10 @@ export default function HistoryPage() {
       </Dialog>
 
       {/* Prover Run Detail Dialog */}
-      <Dialog open={!!selectedProverRun} onOpenChange={() => setSelectedProverRun(null)}>
+      <Dialog
+        open={!!selectedProverRun}
+        onOpenChange={() => setSelectedProverRun(null)}
+      >
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Prover Run Details</DialogTitle>
@@ -138,19 +152,23 @@ export default function HistoryPage() {
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm text-muted-foreground">Module</p>
+                  <p className="text-muted-foreground text-sm">Module</p>
                   <p className="font-mono">{selectedProverRun.moduleName}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Status</p>
+                  <p className="text-muted-foreground text-sm">Status</p>
                   <Badge
-                    variant={selectedProverRun.status === "passed" ? "default" : "destructive"}
+                    variant={
+                      selectedProverRun.status === "passed"
+                        ? "default"
+                        : "destructive"
+                    }
                   >
                     {selectedProverRun.status}
                   </Badge>
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Duration</p>
+                  <p className="text-muted-foreground text-sm">Duration</p>
                   <p className="font-mono">
                     {selectedProverRun.durationMs
                       ? `${(selectedProverRun.durationMs / 1000).toFixed(2)}s`
@@ -160,9 +178,9 @@ export default function HistoryPage() {
               </div>
               {selectedProverRun.result && (
                 <div>
-                  <p className="text-sm text-muted-foreground mb-2">Result</p>
+                  <p className="text-muted-foreground mb-2 text-sm">Result</p>
                   <ScrollArea className="h-64 rounded border p-4">
-                    <pre className="text-sm font-mono">
+                    <pre className="font-mono text-sm">
                       {JSON.stringify(selectedProverRun.result, null, 2)}
                     </pre>
                   </ScrollArea>

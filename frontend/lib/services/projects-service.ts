@@ -5,11 +5,13 @@ import type {
   ProjectsResponse,
 } from "@/lib/types/project";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
+const API_BASE = "";
 
-export async function listProjects(): Promise<Project[]> {
+export async function listProjects(walletAddress: string): Promise<Project[]> {
   const response = await fetch(`${API_BASE}/api/projects`, {
-    credentials: "include",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to fetch projects");
@@ -18,9 +20,14 @@ export async function listProjects(): Promise<Project[]> {
   return data.projects;
 }
 
-export async function getProject(id: string): Promise<Project> {
+export async function getProject(
+  id: string,
+  walletAddress: string
+): Promise<Project> {
   const response = await fetch(`${API_BASE}/api/projects/${id}`, {
-    credentials: "include",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to fetch project");
@@ -28,11 +35,16 @@ export async function getProject(id: string): Promise<Project> {
   return response.json();
 }
 
-export async function createProject(input: CreateProjectInput): Promise<Project> {
+export async function createProject(
+  input: CreateProjectInput,
+  walletAddress: string
+): Promise<Project> {
   const response = await fetch(`${API_BASE}/api/projects`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -43,12 +55,15 @@ export async function createProject(input: CreateProjectInput): Promise<Project>
 
 export async function updateProject(
   id: string,
-  input: UpdateProjectInput
+  input: UpdateProjectInput,
+  walletAddress: string
 ): Promise<Project> {
   const response = await fetch(`${API_BASE}/api/projects/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -57,10 +72,15 @@ export async function updateProject(
   return response.json();
 }
 
-export async function deleteProject(id: string): Promise<void> {
+export async function deleteProject(
+  id: string,
+  walletAddress: string
+): Promise<void> {
   const response = await fetch(`${API_BASE}/api/projects/${id}`, {
     method: "DELETE",
-    credentials: "include",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to delete project");

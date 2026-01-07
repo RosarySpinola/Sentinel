@@ -13,10 +13,11 @@ import { SuggestionsList } from "./components/suggestions-list";
 import { GasTimelineChart } from "./components/gas-timeline-chart";
 
 export default function GasPage() {
-  const { profile, isLoading, error, analyzeTransaction, loadDemo, clear } = useGasProfile();
+  const { profile, isLoading, error, analyzeTransaction, loadDemo, clear } =
+    useGasProfile();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Gas Profiler</h1>
@@ -26,7 +27,7 @@ export default function GasPage() {
         </div>
         {profile && (
           <Button variant="outline" onClick={clear}>
-            <X className="h-4 w-4 mr-2" />
+            <X className="mr-2 h-4 w-4" />
             Clear Analysis
           </Button>
         )}
@@ -49,7 +50,7 @@ export default function GasPage() {
       {isLoading && (
         <Card>
           <CardContent className="py-12 text-center">
-            <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="border-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
             <p className="text-muted-foreground">Analyzing gas usage...</p>
           </CardContent>
         </Card>

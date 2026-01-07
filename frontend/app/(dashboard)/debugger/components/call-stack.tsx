@@ -23,12 +23,14 @@ export function CallStack({
         <CardTitle className="text-sm">Call Stack</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-1 text-sm font-mono">
+        <div className="space-y-1 font-mono text-sm">
           {sortedStack.length > 0 ? (
             sortedStack.map((frame, index) => (
               <div
                 key={index}
-                className={index === 0 ? "text-primary" : "text-muted-foreground"}
+                className={
+                  index === 0 ? "text-primary" : "text-muted-foreground"
+                }
                 style={{ paddingLeft: `${index * 16}px` }}
               >
                 {index === 0 ? "→ " : ""}

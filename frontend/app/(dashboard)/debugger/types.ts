@@ -1,5 +1,5 @@
 export interface TraceRequest {
-  network: 'mainnet' | 'testnet';
+  network: "mainnet" | "testnet";
   sender: string;
   moduleAddress: string;
   moduleName: string;

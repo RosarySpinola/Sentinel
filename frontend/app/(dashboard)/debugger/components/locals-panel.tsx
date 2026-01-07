@@ -24,7 +24,7 @@ export function LocalsPanel({ locals }: LocalsPanelProps) {
         <CardTitle className="text-sm">Local Variables</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2 text-sm font-mono">
+        <div className="space-y-2 font-mono text-sm">
           {locals.length > 0 ? (
             locals.map((local, index) => (
               <div key={index} className="flex justify-between gap-2">
@@ -32,7 +32,7 @@ export function LocalsPanel({ locals }: LocalsPanelProps) {
                   {local.name}
                   <span className="text-xs opacity-60">: {local.var_type}</span>
                 </span>
-                <span className="text-primary truncate max-w-[120px]">
+                <span className="text-primary max-w-[120px] truncate">
                   {formatValue(local.value)}
                 </span>
               </div>

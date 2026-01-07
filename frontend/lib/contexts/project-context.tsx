@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 import type { Project } from "@/lib/types/project";
 
 interface ProjectContextType {
@@ -14,7 +20,9 @@ const ProjectContext = createContext<ProjectContextType | undefined>(undefined);
 const STORAGE_KEY = "sentinel-selected-project";
 
 export function ProjectProvider({ children }: { children: ReactNode }) {
-  const [selectedProject, setSelectedProjectState] = useState<Project | null>(null);
+  const [selectedProject, setSelectedProjectState] = useState<Project | null>(
+    null
+  );
 
   // Load selected project from localStorage on mount
   useEffect(() => {

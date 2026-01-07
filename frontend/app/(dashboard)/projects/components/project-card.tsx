@@ -25,10 +25,15 @@ const networkColors: Record<NetworkType, string> = {
   devnet: "bg-green-500/10 text-green-500 border-green-500/20",
 };
 
-export function ProjectCard({ project, onEdit, onDelete, onClick }: ProjectCardProps) {
+export function ProjectCard({
+  project,
+  onEdit,
+  onDelete,
+  onClick,
+}: ProjectCardProps) {
   return (
     <Card
-      className="cursor-pointer hover:border-primary/50 transition-colors"
+      className="hover:border-primary/50 cursor-pointer transition-colors"
       onClick={() => onClick(project)}
     >
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
@@ -69,11 +74,11 @@ export function ProjectCard({ project, onEdit, onDelete, onClick }: ProjectCardP
       </CardHeader>
       <CardContent>
         {project.description && (
-          <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
+          <p className="text-muted-foreground mb-4 line-clamp-2 text-sm">
             {project.description}
           </p>
         )}
-        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+        <div className="text-muted-foreground flex items-center gap-4 text-sm">
           <div className="flex items-center gap-1">
             <Zap className="h-4 w-4" />
             <span>{project.simulationCount ?? 0} simulations</span>

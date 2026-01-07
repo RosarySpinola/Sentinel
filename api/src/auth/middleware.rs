@@ -9,7 +9,7 @@ use serde_json::json;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use super::verify_api_key;
+// API key verification now uses SHA-256 hash matching
 
 /// User info extracted from API key authentication
 #[derive(Clone, Debug)]
@@ -87,39 +87,43 @@ fn extract_api_key(request: &Request) -> Option<String> {
 }
 
 async fn authenticate_key(pool: &PgPool, raw_key: &str) -> Result<AuthenticatedUser, AuthError> {
-    // Fetch all non-expired keys for verification
-    // Note: In production, you'd want to add an index on key_prefix and filter first
-    let keys: Vec<ApiKeyRow> = sqlx::query_as::<_, ApiKeyRow>(
+    // Hash the incoming key with SHA-256 to match against stored hash
+    use sha2::{Sha256, Digest};
+    let mut hasher = Sha256::new();
+    hasher.update(raw_key.as_bytes());
+    let key_hash = format!("{:x}", hasher.finalize());
+
+    // Look up in sentinel_api_keys table (matching frontend schema)
+    let key: Option<ApiKeyRow> = sqlx::query_as::<_, ApiKeyRow>(
         r#"
-        SELECT id, user_id, key_hash, expires_at
-        FROM api_keys
-        WHERE expires_at IS NULL OR expires_at > NOW()
+        SELECT id, wallet_address as user_id, key_hash
+        FROM sentinel_api_keys
+        WHERE key_hash = $1
         "#
     )
-    .fetch_all(pool)
+    .bind(&key_hash)
+    .fetch_optional(pool)
     .await
     .map_err(|e| AuthError::DatabaseError(e.to_string()))?;
 
-    // Find matching key using constant-time comparison
-    for key in keys {
-        if verify_api_key(raw_key, &key.key_hash) {
+    match key {
+        Some(key) => {
             // Update last_used_at
             sqlx::query(
-                r#"UPDATE api_keys SET last_used_at = NOW() WHERE id = $1"#
+                r#"UPDATE sentinel_api_keys SET last_used_at = NOW() WHERE id = $1"#
             )
             .bind(key.id)
             .execute(pool)
             .await
-            .ok(); // Ignore errors for usage tracking
+            .ok();
 
-            return Ok(AuthenticatedUser {
+            Ok(AuthenticatedUser {
                 user_id: key.user_id,
                 api_key_id: key.id,
-            });
+            })
         }
+        None => Err(AuthError::NotFound),
     }
-
-    Err(AuthError::NotFound)
 }
 
 #[derive(Debug, sqlx::FromRow)]
@@ -127,8 +131,6 @@ struct ApiKeyRow {
     id: Uuid,
     user_id: String,
     key_hash: String,
-    #[allow(dead_code)]
-    expires_at: Option<chrono::DateTime<chrono::Utc>>,
 }
 
 #[derive(Debug, thiserror::Error)]

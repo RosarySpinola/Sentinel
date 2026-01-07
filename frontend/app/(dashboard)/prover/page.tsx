@@ -58,11 +58,11 @@ function StatusIcon({ status }: { status: ProverStatus }) {
     case "passed":
       return <CheckCircle className="h-5 w-5 text-green-500" />;
     case "failed":
-      return <XCircle className="h-5 w-5 text-destructive" />;
+      return <XCircle className="text-destructive h-5 w-5" />;
     case "timeout":
       return <Clock className="h-5 w-5 text-yellow-500" />;
     case "error":
-      return <AlertCircle className="h-5 w-5 text-destructive" />;
+      return <AlertCircle className="text-destructive h-5 w-5" />;
   }
 }
 
@@ -86,20 +86,20 @@ function SpecResultItem({ spec }: { spec: SpecResult }) {
         {spec.status === "passed" ? (
           <CheckCircle className="h-4 w-4 text-green-500" />
         ) : (
-          <XCircle className="h-4 w-4 text-destructive" />
+          <XCircle className="text-destructive h-4 w-4" />
         )}
-        <span className="text-sm font-mono">{spec.name}</span>
+        <span className="font-mono text-sm">{spec.name}</span>
       </div>
 
       {spec.counterexample && (
-        <div className="mt-2 p-3 rounded-lg bg-destructive/10 border border-destructive/20 ml-6">
-          <div className="flex items-center gap-2 mb-2">
-            <AlertTriangle className="h-4 w-4 text-destructive" />
-            <span className="text-sm font-medium text-destructive">
+        <div className="bg-destructive/10 border-destructive/20 mt-2 ml-6 rounded-lg border p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <AlertTriangle className="text-destructive h-4 w-4" />
+            <span className="text-destructive text-sm font-medium">
               Counterexample Found
             </span>
           </div>
-          <div className="space-y-1 text-xs font-mono">
+          <div className="space-y-1 font-mono text-xs">
             {Object.entries(spec.counterexample.inputs).map(([key, value]) => (
               <div key={key}>
                 <span className="text-muted-foreground">{key}:</span>{" "}
@@ -107,7 +107,7 @@ function SpecResultItem({ spec }: { spec: SpecResult }) {
               </div>
             ))}
           </div>
-          <p className="text-xs text-destructive mt-2">
+          <p className="text-destructive mt-2 text-xs">
             Failed: {spec.counterexample.failed_assertion}
           </p>
         </div>
@@ -121,7 +121,7 @@ function ModuleResultCard({ module }: { module: ModuleResult }) {
     <Card>
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-sm font-mono">{module.name}</CardTitle>
+          <CardTitle className="font-mono text-sm">{module.name}</CardTitle>
           <Badge
             variant={module.status === "passed" ? "default" : "destructive"}
           >
@@ -148,9 +148,9 @@ function RawOutputSection({ output }: { output: string }) {
     <Collapsible open={isOpen} onOpenChange={setIsOpen}>
       <Card>
         <CollapsibleTrigger asChild>
-          <CardHeader className="pb-2 cursor-pointer hover:bg-muted/50">
+          <CardHeader className="hover:bg-muted/50 cursor-pointer pb-2">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2">
+              <CardTitle className="flex items-center gap-2 text-sm">
                 <Terminal className="h-4 w-4" />
                 Raw Prover Output
               </CardTitle>
@@ -164,7 +164,7 @@ function RawOutputSection({ output }: { output: string }) {
         </CollapsibleTrigger>
         <CollapsibleContent>
           <CardContent className="pt-0">
-            <pre className="text-xs font-mono bg-muted p-3 rounded-lg overflow-x-auto whitespace-pre-wrap">
+            <pre className="bg-muted overflow-x-auto rounded-lg p-3 font-mono text-xs whitespace-pre-wrap">
               {output}
             </pre>
           </CardContent>
@@ -184,12 +184,12 @@ export default function ProverPage() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
+    <div className="flex h-[calc(100vh-4rem)] flex-col">
       {/* Header */}
-      <div className="border-b p-4 flex items-center justify-between">
+      <div className="flex items-center justify-between border-b p-4">
         <div>
           <h1 className="text-xl font-bold">Move Prover</h1>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-muted-foreground text-sm">
             Formal verification for Move smart contracts
           </p>
         </div>
@@ -200,18 +200,18 @@ export default function ProverPage() {
             </Button>
           )}
           <Button onClick={handleRunProver} disabled={isLoading}>
-            <Play className="h-4 w-4 mr-2" />
+            <Play className="mr-2 h-4 w-4" />
             {isLoading ? "Verifying..." : "Run Prover"}
           </Button>
         </div>
       </div>
 
       {/* Main content */}
-      <div className="flex-1 grid grid-cols-2 min-h-0">
+      <div className="grid min-h-0 flex-1 grid-cols-2">
         {/* Code editor */}
         <div className="border-r p-4">
           <Textarea
-            className="h-full font-mono text-sm resize-none"
+            className="h-full resize-none font-mono text-sm"
             value={code}
             onChange={(e) => setCode(e.target.value)}
             placeholder="Paste your Move code here..."
@@ -219,11 +219,11 @@ export default function ProverPage() {
         </div>
 
         {/* Results */}
-        <div className="p-4 overflow-auto">
+        <div className="overflow-auto p-4">
           {!result && !isLoading && !error && (
-            <div className="h-full flex items-center justify-center">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <ShieldCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                <ShieldCheck className="text-muted-foreground mx-auto mb-4 h-12 w-12" />
                 <p className="text-muted-foreground">
                   Click &quot;Run Prover&quot; to verify your Move code
                 </p>
@@ -232,11 +232,11 @@ export default function ProverPage() {
           )}
 
           {isLoading && (
-            <div className="h-full flex items-center justify-center">
+            <div className="flex h-full items-center justify-center">
               <div className="text-center">
-                <div className="h-12 w-12 border-4 border-primary border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <div className="border-primary mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-t-transparent" />
                 <p className="text-muted-foreground">Running Move Prover...</p>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-muted-foreground mt-1 text-xs">
                   This may take up to 2 minutes
                 </p>
               </div>
@@ -244,16 +244,16 @@ export default function ProverPage() {
           )}
 
           {error && !isLoading && (
-            <div className="h-full flex items-center justify-center">
-              <Card className="max-w-md border-destructive">
+            <div className="flex h-full items-center justify-center">
+              <Card className="border-destructive max-w-md">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-2 text-destructive">
+                  <CardTitle className="text-destructive flex items-center gap-2">
                     <AlertCircle className="h-5 w-5" />
                     Prover Error
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-sm text-muted-foreground">{error}</p>
+                  <p className="text-muted-foreground text-sm">{error}</p>
                 </CardContent>
               </Card>
             </div>
@@ -273,7 +273,7 @@ export default function ProverPage() {
                       <Badge variant="outline">{result.duration_ms}ms</Badge>
                     </div>
                     {result.summary && (
-                      <p className="text-sm text-muted-foreground mt-2">
+                      <p className="text-muted-foreground mt-2 text-sm">
                         {result.summary}
                       </p>
                     )}

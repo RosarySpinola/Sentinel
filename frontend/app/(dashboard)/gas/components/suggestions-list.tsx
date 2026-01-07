@@ -9,7 +9,10 @@ interface SuggestionsListProps {
   suggestions: GasSuggestion[];
 }
 
-const severityConfig: Record<Severity, { icon: typeof Info; color: string; bg: string }> = {
+const severityConfig: Record<
+  Severity,
+  { icon: typeof Info; color: string; bg: string }
+> = {
   info: {
     icon: Info,
     color: "text-blue-500",
@@ -35,7 +38,7 @@ export function SuggestionsList({ suggestions }: SuggestionsListProps) {
           <CardTitle className="text-sm">Optimization Suggestions</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground text-center py-8">
+          <p className="text-muted-foreground py-8 text-center text-sm">
             No optimization suggestions found. Your code looks efficient!
           </p>
         </CardContent>
@@ -46,7 +49,7 @@ export function SuggestionsList({ suggestions }: SuggestionsListProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-sm flex items-center justify-between">
+        <CardTitle className="flex items-center justify-between text-sm">
           <span>Optimization Suggestions</span>
           <Badge variant="secondary">{suggestions.length} found</Badge>
         </CardTitle>
@@ -58,14 +61,11 @@ export function SuggestionsList({ suggestions }: SuggestionsListProps) {
             const Icon = config.icon;
 
             return (
-              <div
-                key={index}
-                className={`p-4 rounded-lg border ${config.bg}`}
-              >
+              <div key={index} className={`rounded-lg border p-4 ${config.bg}`}>
                 <div className="flex items-start gap-3">
-                  <Icon className={`h-5 w-5 mt-0.5 ${config.color}`} />
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
+                  <Icon className={`mt-0.5 h-5 w-5 ${config.color}`} />
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-1 flex items-center gap-2">
                       <span className={`font-medium ${config.color}`}>
                         {suggestion.message}
                       </span>
@@ -73,13 +73,15 @@ export function SuggestionsList({ suggestions }: SuggestionsListProps) {
                         ~{suggestion.estimated_savings.toLocaleString()} gas
                       </Badge>
                     </div>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-muted-foreground text-sm">
                       {suggestion.description}
                     </p>
                     {suggestion.location && (
-                      <p className="text-xs font-mono text-muted-foreground mt-2">
-                        {suggestion.location.module}::{suggestion.location.function}
-                        {suggestion.location.line && `:${suggestion.location.line}`}
+                      <p className="text-muted-foreground mt-2 font-mono text-xs">
+                        {suggestion.location.module}::
+                        {suggestion.location.function}
+                        {suggestion.location.line &&
+                          `:${suggestion.location.line}`}
                       </p>
                     )}
                   </div>

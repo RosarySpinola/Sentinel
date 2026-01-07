@@ -1,29 +1,32 @@
-import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
-
-// In-memory store for demo (shared with parent route in real implementation)
-const apiKeysStore = new Map<string, any[]>();
+import { NextRequest, NextResponse } from "next/server";
+import { getSupabase } from "@/lib/supabase/server";
+import { getWalletFromRequest } from "@/lib/api/auth";
 
 export async function DELETE(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { userId } = await auth();
+  const walletAddress = getWalletFromRequest(request);
   const { id } = await params;
 
-  if (!userId) {
+  if (!walletAddress) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const keys = apiKeysStore.get(userId) || [];
-  const keyIndex = keys.findIndex((k) => k.id === id);
+  const supabase = getSupabase();
 
-  if (keyIndex === -1) {
-    return NextResponse.json({ error: "API key not found" }, { status: 404 });
+  const { error } = await supabase
+    .from("sentinel_api_keys")
+    .delete()
+    .eq("id", id)
+    .eq("wallet_address", walletAddress);
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Failed to delete API key" },
+      { status: 500 }
+    );
   }
-
-  keys.splice(keyIndex, 1);
-  apiKeysStore.set(userId, keys);
 
   return NextResponse.json({ success: true });
 }

@@ -9,7 +9,7 @@ interface StateDiffViewProps {
 export function StateDiffView({ changes }: StateDiffViewProps) {
   if (changes.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground text-center py-4">
+      <p className="text-muted-foreground py-4 text-center text-sm">
         No state changes
       </p>
     );
@@ -18,38 +18,35 @@ export function StateDiffView({ changes }: StateDiffViewProps) {
   return (
     <div className="space-y-3">
       {changes.map((change, i) => (
-        <div
-          key={i}
-          className="p-3 rounded-lg border bg-card"
-        >
-          <div className="flex items-start justify-between mb-2">
-            <div className="font-mono text-xs text-muted-foreground truncate max-w-[70%]">
+        <div key={i} className="bg-card rounded-lg border p-3">
+          <div className="mb-2 flex items-start justify-between">
+            <div className="text-muted-foreground max-w-[70%] truncate font-mono text-xs">
               {change.address}
             </div>
             <span
-              className={`text-xs font-medium px-2 py-0.5 rounded ${
+              className={`rounded px-2 py-0.5 text-xs font-medium ${
                 change.changeType === "write"
                   ? "bg-blue-500/10 text-blue-500"
                   : change.changeType === "delete"
-                  ? "bg-red-500/10 text-red-500"
-                  : "bg-green-500/10 text-green-500"
+                    ? "bg-red-500/10 text-red-500"
+                    : "bg-green-500/10 text-green-500"
               }`}
             >
               {change.changeType}
             </span>
           </div>
 
-          <p className="text-sm font-medium mb-2 truncate">{change.resource}</p>
+          <p className="mb-2 truncate text-sm font-medium">{change.resource}</p>
 
           {change.before !== undefined && (
-            <div className="text-xs font-mono p-2 rounded bg-red-500/10 text-red-500 mb-1 overflow-auto">
+            <div className="mb-1 overflow-auto rounded bg-red-500/10 p-2 font-mono text-xs text-red-500">
               <span className="opacity-60">- </span>
               {JSON.stringify(change.before, null, 2)}
             </div>
           )}
 
           {change.after !== undefined && (
-            <div className="text-xs font-mono p-2 rounded bg-green-500/10 text-green-500 overflow-auto">
+            <div className="overflow-auto rounded bg-green-500/10 p-2 font-mono text-xs text-green-500">
               <span className="opacity-60">+ </span>
               {JSON.stringify(change.after, null, 2)}
             </div>

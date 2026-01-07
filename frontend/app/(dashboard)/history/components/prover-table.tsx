@@ -27,12 +27,16 @@ const statusColors: Record<string, string> = {
   error: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
-export function ProverTable({ proverRuns, onView, isLoading }: ProverTableProps) {
+export function ProverTable({
+  proverRuns,
+  onView,
+  isLoading,
+}: ProverTableProps) {
   if (isLoading) {
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+          <div key={i} className="bg-muted h-16 animate-pulse rounded" />
         ))}
       </div>
     );
@@ -40,7 +44,7 @@ export function ProverTable({ proverRuns, onView, isLoading }: ProverTableProps)
 
   if (proverRuns.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-muted-foreground py-8 text-center">
         No prover runs found
       </div>
     );
@@ -63,7 +67,9 @@ export function ProverTable({ proverRuns, onView, isLoading }: ProverTableProps)
             <TableCell className="text-muted-foreground">
               {formatDistanceToNow(new Date(run.createdAt))}
             </TableCell>
-            <TableCell className="font-mono text-sm">{run.moduleName}</TableCell>
+            <TableCell className="font-mono text-sm">
+              {run.moduleName}
+            </TableCell>
             <TableCell>
               <Badge variant="outline" className={statusColors[run.status]}>
                 {run.status}

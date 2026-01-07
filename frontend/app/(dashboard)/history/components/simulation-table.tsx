@@ -31,7 +31,7 @@ export function SimulationTable({
     return (
       <div className="space-y-2">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-16 bg-muted animate-pulse rounded" />
+          <div key={i} className="bg-muted h-16 animate-pulse rounded" />
         ))}
       </div>
     );
@@ -39,7 +39,7 @@ export function SimulationTable({
 
   if (simulations.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-muted-foreground py-8 text-center">
         No simulations found
       </div>
     );
@@ -86,7 +86,11 @@ export function SimulationTable({
                 <Button variant="ghost" size="icon" onClick={() => onView(sim)}>
                   <Eye className="h-4 w-4" />
                 </Button>
-                <Button variant="ghost" size="icon" onClick={() => onRerun(sim)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onRerun(sim)}
+                >
                   <RotateCcw className="h-4 w-4" />
                 </Button>
               </div>

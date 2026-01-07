@@ -26,7 +26,7 @@ export default function DebuggerPage() {
 
   if (!hasSession) {
     return (
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 p-6">
         <div>
           <h1 className="text-3xl font-bold">Visual Debugger</h1>
           <p className="text-muted-foreground mt-1">
@@ -41,7 +41,7 @@ export default function DebuggerPage() {
   const step = currentInstruction;
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col">
+    <div className="flex h-[calc(100vh-4rem)] flex-col">
       <StepControls
         currentStep={currentStep}
         totalSteps={trace?.steps.length ?? 0}
@@ -52,7 +52,7 @@ export default function DebuggerPage() {
         onClear={clear}
       />
 
-      <div className="flex-1 grid grid-cols-3 gap-4 p-4 min-h-0">
+      <div className="grid min-h-0 flex-1 grid-cols-3 gap-4 p-4">
         <div className="col-span-2">
           <SourceView
             steps={trace?.steps ?? []}

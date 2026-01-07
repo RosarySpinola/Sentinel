@@ -1,7 +1,15 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  Cell,
+} from "recharts";
 import { FunctionGas } from "../types";
 
 interface FunctionBreakdownProps {
@@ -39,12 +47,13 @@ export function FunctionBreakdown({ functions }: FunctionBreakdownProps) {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload;
                   return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
+                    <div className="bg-background rounded-lg border p-2 shadow-sm">
                       <div className="font-mono font-medium">{item.name}</div>
-                      <div className="text-sm text-muted-foreground">
-                        Gas: {item.gas.toLocaleString()} ({item.percentage.toFixed(1)}%)
+                      <div className="text-muted-foreground text-sm">
+                        Gas: {item.gas.toLocaleString()} (
+                        {item.percentage.toFixed(1)}%)
                       </div>
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-muted-foreground text-sm">
                         Calls: {item.calls}x
                       </div>
                     </div>

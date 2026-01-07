@@ -5,16 +5,10 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus, Trash2, Zap } from "lucide-react";
 import { SimulationRequest } from "../types";
+import { useNetwork } from "@/lib/contexts/network-context";
 
 interface SimulationFormProps {
   onSimulate: (request: SimulationRequest) => Promise<void>;
@@ -22,10 +16,10 @@ interface SimulationFormProps {
 }
 
 export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
-  const { account, network } = useWallet();
+  const { account } = useWallet();
+  const { network } = useNetwork();
 
   const [formData, setFormData] = useState({
-    network: (network?.chainId === 126 ? "mainnet" : "testnet") as "mainnet" | "testnet",
     sender: "",
     moduleAddress: "0x1",
     moduleName: "aptos_account",
@@ -52,7 +46,7 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
     });
 
     await onSimulate({
-      network: formData.network,
+      network,
       sender: senderAddress,
       moduleAddress: formData.moduleAddress,
       moduleName: formData.moduleName,
@@ -64,7 +58,8 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   };
 
   const addArg = () => setArgs([...args, ""]);
-  const removeArg = (index: number) => setArgs(args.filter((_, i) => i !== index));
+  const removeArg = (index: number) =>
+    setArgs(args.filter((_, i) => i !== index));
   const updateArg = (index: number, value: string) => {
     const newArgs = [...args];
     newArgs[index] = value;
@@ -72,7 +67,8 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   };
 
   const addTypeArg = () => setTypeArgs([...typeArgs, ""]);
-  const removeTypeArg = (index: number) => setTypeArgs(typeArgs.filter((_, i) => i !== index));
+  const removeTypeArg = (index: number) =>
+    setTypeArgs(typeArgs.filter((_, i) => i !== index));
   const updateTypeArg = (index: number, value: string) => {
     const newTypeArgs = [...typeArgs];
     newTypeArgs[index] = value;
@@ -83,36 +79,21 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5 text-primary" />
+          <Zap className="text-primary h-5 w-5" />
           Simulation Parameters
         </CardTitle>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Network */}
-          <div className="space-y-2">
-            <Label>Network</Label>
-            <Select
-              value={formData.network}
-              onValueChange={(v) => setFormData({ ...formData, network: v as "mainnet" | "testnet" })}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="testnet">Testnet</SelectItem>
-                <SelectItem value="mainnet">Mainnet</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
           {/* Sender */}
           <div className="space-y-2">
             <Label>Sender Address</Label>
             <Input
               placeholder="0x..."
               value={senderAddress}
-              onChange={(e) => setFormData({ ...formData, sender: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, sender: e.target.value })
+              }
               className="font-mono text-sm"
             />
           </div>
@@ -123,7 +104,9 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             <Input
               placeholder="0x1"
               value={formData.moduleAddress}
-              onChange={(e) => setFormData({ ...formData, moduleAddress: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, moduleAddress: e.target.value })
+              }
               className="font-mono text-sm"
             />
           </div>
@@ -134,7 +117,9 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             <Input
               placeholder="aptos_account"
               value={formData.moduleName}
-              onChange={(e) => setFormData({ ...formData, moduleName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, moduleName: e.target.value })
+              }
             />
           </div>
 
@@ -144,7 +129,9 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             <Input
               placeholder="transfer"
               value={formData.functionName}
-              onChange={(e) => setFormData({ ...formData, functionName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, functionName: e.target.value })
+              }
             />
           </div>
 
@@ -152,8 +139,13 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label>Type Arguments</Label>
-              <Button type="button" variant="ghost" size="sm" onClick={addTypeArg}>
-                <Plus className="h-4 w-4 mr-1" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={addTypeArg}
+              >
+                <Plus className="mr-1 h-4 w-4" />
                 Add
               </Button>
             </div>
@@ -165,7 +157,12 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
                   onChange={(e) => updateTypeArg(i, e.target.value)}
                   className="font-mono text-sm"
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeTypeArg(i)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeTypeArg(i)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -177,7 +174,7 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             <div className="flex items-center justify-between">
               <Label>Arguments (JSON format)</Label>
               <Button type="button" variant="ghost" size="sm" onClick={addArg}>
-                <Plus className="h-4 w-4 mr-1" />
+                <Plus className="mr-1 h-4 w-4" />
                 Add
               </Button>
             </div>
@@ -189,7 +186,12 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
                   onChange={(e) => updateArg(i, e.target.value)}
                   className="font-mono text-sm"
                 />
-                <Button type="button" variant="ghost" size="icon" onClick={() => removeArg(i)}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeArg(i)}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
@@ -202,12 +204,21 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             <Input
               type="number"
               value={formData.maxGas}
-              onChange={(e) => setFormData({ ...formData, maxGas: parseInt(e.target.value) || 100000 })}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  maxGas: parseInt(e.target.value) || 100000,
+                })
+              }
             />
           </div>
 
           {/* Submit */}
-          <Button type="submit" className="w-full" disabled={isLoading || !senderAddress}>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || !senderAddress}
+          >
             {isLoading ? "Simulating..." : "Simulate Transaction"}
           </Button>
         </form>

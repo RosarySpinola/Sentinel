@@ -36,8 +36,8 @@ export function ApiKeyList({ apiKeys, onDelete }: ApiKeyListProps) {
   if (apiKeys.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
-        <Key className="h-12 w-12 text-muted-foreground mb-4" />
-        <h2 className="text-lg font-semibold mb-2">No API keys yet</h2>
+        <Key className="text-muted-foreground mb-4 h-12 w-12" />
+        <h2 className="mb-2 text-lg font-semibold">No API keys yet</h2>
         <p className="text-muted-foreground">
           Create an API key to access the Sentinel API programmatically.
         </p>
@@ -54,7 +54,11 @@ export function ApiKeyList({ apiKeys, onDelete }: ApiKeyListProps) {
     if (expDate < now) {
       return <Badge variant="destructive">Expired</Badge>;
     }
-    return <span className="text-muted-foreground">{formatDistanceToNow(expDate)}</span>;
+    return (
+      <span className="text-muted-foreground">
+        {formatDistanceToNow(expDate)}
+      </span>
+    );
   };
 
   return (
@@ -75,13 +79,17 @@ export function ApiKeyList({ apiKeys, onDelete }: ApiKeyListProps) {
             <TableRow key={key.id}>
               <TableCell className="font-medium">{key.name}</TableCell>
               <TableCell>
-                <code className="text-sm bg-muted px-2 py-1 rounded">{key.keyPrefix}</code>
+                <code className="bg-muted rounded px-2 py-1 text-sm">
+                  {key.keyPrefix}
+                </code>
               </TableCell>
               <TableCell className="text-muted-foreground">
                 {formatDistanceToNow(new Date(key.createdAt))}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {key.lastUsedAt ? formatDistanceToNow(new Date(key.lastUsedAt)) : "Never"}
+                {key.lastUsedAt
+                  ? formatDistanceToNow(new Date(key.lastUsedAt))
+                  : "Never"}
               </TableCell>
               <TableCell>{getExpirationStatus(key.expiresAt)}</TableCell>
               <TableCell className="text-right">
@@ -90,7 +98,7 @@ export function ApiKeyList({ apiKeys, onDelete }: ApiKeyListProps) {
                   size="icon"
                   onClick={() => setDeleteId(key.id)}
                 >
-                  <Trash2 className="h-4 w-4 text-destructive" />
+                  <Trash2 className="text-destructive h-4 w-4" />
                 </Button>
               </TableCell>
             </TableRow>
@@ -103,8 +111,9 @@ export function ApiKeyList({ apiKeys, onDelete }: ApiKeyListProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete API Key</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this API key? Any applications using this key
-              will no longer be able to authenticate. This action cannot be undone.
+              Are you sure you want to delete this API key? Any applications
+              using this key will no longer be able to authenticate. This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

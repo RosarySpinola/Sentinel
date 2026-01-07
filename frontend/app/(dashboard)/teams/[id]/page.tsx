@@ -38,10 +38,16 @@ import type { Team, TeamMember, TeamInvite, TeamRole } from "@/lib/types/team";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "@/lib/utils/format";
 
-export default function TeamDetailPage({ params }: { params: Promise<{ id: string }> }) {
+export default function TeamDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = use(params);
   const router = useRouter();
-  const [team, setTeam] = useState<(Team & { members: TeamMember[]; invites: TeamInvite[] }) | null>(null);
+  const [team, setTeam] = useState<
+    (Team & { members: TeamMember[]; invites: TeamInvite[] }) | null
+  >(null);
   const [isLoading, setIsLoading] = useState(true);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<TeamRole>("member");
@@ -69,7 +75,10 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
     if (!inviteEmail.trim()) return;
 
     try {
-      await teamsService.inviteMember(id, { email: inviteEmail.trim(), role: inviteRole });
+      await teamsService.inviteMember(id, {
+        email: inviteEmail.trim(),
+        role: inviteRole,
+      });
       toast.success("Invitation sent");
       setInviteEmail("");
       fetchTeam();
@@ -109,16 +118,20 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
   if (isLoading || !team) {
     return (
       <div className="p-6">
-        <div className="h-8 w-48 bg-muted animate-pulse rounded mb-6" />
-        <div className="h-64 bg-muted animate-pulse rounded" />
+        <div className="bg-muted mb-6 h-8 w-48 animate-pulse rounded" />
+        <div className="bg-muted h-64 animate-pulse rounded" />
       </div>
     );
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.push("/teams")}>
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => router.push("/teams")}
+        >
           <ArrowLeft className="h-4 w-4" />
         </Button>
         <div>
@@ -127,8 +140,8 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        <div className="space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Members</CardTitle>
@@ -149,16 +162,23 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
                       <TableCell>
                         <div>
                           <p className="font-medium">{member.name}</p>
-                          <p className="text-sm text-muted-foreground">{member.email}</p>
+                          <p className="text-muted-foreground text-sm">
+                            {member.email}
+                          </p>
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={roleColors[member.role]}>
+                        <Badge
+                          variant="outline"
+                          className={roleColors[member.role]}
+                        >
                           {member.role}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
-                        {member.joinedAt ? formatDistanceToNow(new Date(member.joinedAt)) : "-"}
+                        {member.joinedAt
+                          ? formatDistanceToNow(new Date(member.joinedAt))
+                          : "-"}
                       </TableCell>
                       <TableCell className="text-right">
                         {member.role !== "owner" && (
@@ -167,7 +187,7 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
                             size="icon"
                             onClick={() => setMemberToRemove(member)}
                           >
-                            <Trash2 className="h-4 w-4 text-destructive" />
+                            <Trash2 className="text-destructive h-4 w-4" />
                           </Button>
                         )}
                       </TableCell>
@@ -200,7 +220,7 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
                           <Badge variant="outline">{invite.role}</Badge>
                         </TableCell>
                         <TableCell className="text-muted-foreground">
-                          <Clock className="inline h-3 w-3 mr-1" />
+                          <Clock className="mr-1 inline h-3 w-3" />
                           {formatDistanceToNow(new Date(invite.expiresAt))}
                         </TableCell>
                       </TableRow>
@@ -231,7 +251,10 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="role">Role</Label>
-                  <Select value={inviteRole} onValueChange={(v) => setInviteRole(v as TeamRole)}>
+                  <Select
+                    value={inviteRole}
+                    onValueChange={(v) => setInviteRole(v as TeamRole)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -266,17 +289,24 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
         </div>
       </div>
 
-      <AlertDialog open={!!memberToRemove} onOpenChange={() => setMemberToRemove(null)}>
+      <AlertDialog
+        open={!!memberToRemove}
+        onOpenChange={() => setMemberToRemove(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove Member</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to remove {memberToRemove?.name} from this team?
+              Are you sure you want to remove {memberToRemove?.name} from this
+              team?
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleRemoveMember} className="bg-destructive">
+            <AlertDialogAction
+              onClick={handleRemoveMember}
+              className="bg-destructive"
+            >
               Remove
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -288,12 +318,16 @@ export default function TeamDetailPage({ params }: { params: Promise<{ id: strin
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Team</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this team? This action cannot be undone.
+              Are you sure you want to delete this team? This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteTeam} className="bg-destructive">
+            <AlertDialogAction
+              onClick={handleDeleteTeam}
+              className="bg-destructive"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>

@@ -10,7 +10,11 @@ interface SourceViewProps {
   onStepClick: (step: number) => void;
 }
 
-export function SourceView({ steps, currentStep, onStepClick }: SourceViewProps) {
+export function SourceView({
+  steps,
+  currentStep,
+  onStepClick,
+}: SourceViewProps) {
   const current = steps[currentStep];
   const title = current
     ? `${current.module_name}::${current.function_name}`
@@ -28,17 +32,17 @@ export function SourceView({ steps, currentStep, onStepClick }: SourceViewProps)
               <div
                 key={index}
                 onClick={() => onStepClick(index)}
-                className={`py-1 px-2 cursor-pointer hover:bg-muted/50 ${
+                className={`hover:bg-muted/50 cursor-pointer px-2 py-1 ${
                   index === currentStep ? "bg-primary/20 rounded" : ""
                 }`}
               >
-                <span className="text-muted-foreground w-8 inline-block">
+                <span className="text-muted-foreground inline-block w-8">
                   {index + 1}
                 </span>
                 <span className={index === currentStep ? "text-primary" : ""}>
                   {step.instruction} ({step.module_name}::{step.function_name})
                 </span>
-                <span className="text-muted-foreground text-xs ml-2">
+                <span className="text-muted-foreground ml-2 text-xs">
                   +{step.gas_delta} gas
                 </span>
               </div>

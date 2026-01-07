@@ -11,6 +11,25 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { getAptosWallets } from "@aptos-labs/wallet-standard";
+import { Separator } from "@/components/ui/separator";
+import { MOVEMENT_NETWORKS } from "@/components/wallet-provider";
+import { usePrivyAvailable } from "@/components/providers";
+import dynamic from "next/dynamic";
+
+// Dynamically import Privy section only when needed
+const PrivyLoginSection = dynamic(() => import("./privy-login-section"), {
+  ssr: false,
+  loading: () => (
+    <div className="space-y-3">
+      <div className="text-center">
+        <div className="bg-muted mx-auto mb-2 h-7 w-40 animate-pulse rounded" />
+        <div className="bg-muted mx-auto h-4 w-60 animate-pulse rounded" />
+      </div>
+      <div className="bg-muted h-12 w-full animate-pulse rounded" />
+    </div>
+  ),
+});
 
 interface WalletSelectionModalProps {
   children: React.ReactNode;
@@ -19,21 +38,23 @@ interface WalletSelectionModalProps {
 export function WalletSelectionModal({ children }: WalletSelectionModalProps) {
   const [open, setOpen] = useState(false);
   const { wallets, connect } = useWallet();
+  const privyAvailable = usePrivyAvailable();
 
   // Filter out unwanted wallets, remove duplicates, and sort with Nightly first
   const filteredWallets = wallets
-    .filter((wallet) => {
+    ?.filter((wallet) => {
       const name = wallet.name.toLowerCase();
-      return !name.includes("petra") && 
-             !name.includes("google") && 
-             !name.includes("apple");
+      return (
+        !name.includes("petra") &&
+        !name.includes("google") &&
+        !name.includes("apple") &&
+        !name.includes("continue with")
+      );
     })
     .filter((wallet, index, self) => {
-      // Remove duplicates based on wallet name
       return index === self.findIndex((w) => w.name === wallet.name);
     })
     .sort((a, b) => {
-      // Nightly always first
       if (a.name.toLowerCase().includes("nightly")) return -1;
       if (b.name.toLowerCase().includes("nightly")) return 1;
       return 0;
@@ -41,51 +62,112 @@ export function WalletSelectionModal({ children }: WalletSelectionModalProps) {
 
   const handleWalletSelect = async (walletName: string) => {
     try {
-      await connect(walletName);
+      if (typeof window !== "undefined") {
+        const allWallets = getAptosWallets();
+        const selectedWallet = allWallets.aptosWallets.find(
+          (w) => w.name === walletName
+        );
+
+        if (selectedWallet?.features?.["aptos:connect"]) {
+          const networkInfo: any = {
+            chainId: MOVEMENT_NETWORKS.testnet.chainId,
+            name: "custom" as const,
+            url: MOVEMENT_NETWORKS.testnet.fullnode,
+          };
+
+          try {
+            const result = await selectedWallet.features[
+              "aptos:connect"
+            ].connect(false, networkInfo);
+            if (result.status === "Approved") {
+              await connect(walletName as any);
+              setOpen(false);
+              return;
+            }
+          } catch {
+            // Fallback to standard connection
+          }
+        }
+      }
+
+      await connect(walletName as any);
       setOpen(false);
     } catch {
       // Silent error - wallet adapter will handle error display
     }
   };
 
+  const handleClose = () => setOpen(false);
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {children}
-      </DialogTrigger>
+      <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Connect Wallet</DialogTitle>
           <DialogDescription>
-            Choose a wallet to connect to Movement Network
+            Choose a wallet to connect to Movement Testnet
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-3">
-          {filteredWallets.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              No compatible wallets detected. Please install a supported wallet.
-            </p>
-          ) : (
-            filteredWallets.map((wallet) => (
-              <Button
-                key={wallet.name}
-                variant="outline"
-                className="w-full justify-start h-12"
-                onClick={() => handleWalletSelect(wallet.name)}
-              >
-                <div className="flex items-center space-x-3">
-                  {wallet.icon && (
-                    <img 
-                      src={wallet.icon} 
-                      alt={wallet.name} 
-                      className="w-6 h-6"
-                    />
-                  )}
-                  <span>{wallet.name}</span>
+        <div className="space-y-4">
+          {/* Privy Social Login Option - Only shown when Privy is configured */}
+          {privyAvailable && (
+            <>
+              <PrivyLoginSection onClose={handleClose} />
+              <div className="relative my-6">
+                <Separator />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <span className="bg-background text-muted-foreground px-2 text-xs">
+                    OR
+                  </span>
                 </div>
-              </Button>
-            ))
+              </div>
+            </>
           )}
+
+          {/* Native Wallet Options */}
+          <div className="space-y-3">
+            <div className="text-center">
+              <h3 className="mb-1 text-lg font-semibold">
+                Connect Native Wallet
+              </h3>
+              <p className="text-muted-foreground text-xs">
+                Use your existing Aptos wallet
+              </p>
+            </div>
+            <div className="space-y-2">
+              {filteredWallets?.length === 0 ? (
+                <div className="rounded-lg border border-dashed px-4 py-6 text-center">
+                  <p className="text-muted-foreground mb-2 text-sm">
+                    No wallets detected
+                  </p>
+                  <p className="text-muted-foreground text-xs">
+                    Please install a supported Aptos wallet like Nightly
+                  </p>
+                </div>
+              ) : (
+                filteredWallets?.map((wallet) => (
+                  <Button
+                    key={wallet.name}
+                    variant="outline"
+                    className="hover:bg-accent h-12 w-full justify-start"
+                    onClick={() => handleWalletSelect(wallet.name)}
+                  >
+                    <div className="flex items-center space-x-3">
+                      {wallet.icon && (
+                        <img
+                          src={wallet.icon}
+                          alt={wallet.name}
+                          className="h-6 w-6 rounded"
+                        />
+                      )}
+                      <span className="font-medium">{wallet.name}</span>
+                    </div>
+                  </Button>
+                ))
+              )}
+            </div>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

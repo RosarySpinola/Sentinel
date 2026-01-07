@@ -37,35 +37,35 @@ export function HowItWorksSection() {
   return (
     <section
       id="how-it-works"
-      className="bg-muted/30 border-y border-border py-16 md:py-24"
+      className="bg-muted/30 border-border border-y py-16 md:py-24"
     >
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">How It Works</h2>
-          <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
+        <div className="mb-12 text-center">
+          <h2 className="mb-4 text-3xl font-bold md:text-4xl">How It Works</h2>
+          <p className="text-muted-foreground mx-auto max-w-2xl text-lg">
             Get started in minutes with our simple workflow.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
           {steps.map((step, index) => (
             <div key={step.number} className="relative">
               {/* Connector line */}
               {index < steps.length - 1 && (
-                <div className="hidden lg:block absolute top-8 left-[60%] w-[calc(100%-60%+2rem)] h-[2px] bg-gradient-to-r from-primary/50 to-primary/20" />
+                <div className="from-primary/50 to-primary/20 absolute top-8 left-[60%] hidden h-[2px] w-[calc(100%-60%+2rem)] bg-gradient-to-r lg:block" />
               )}
 
               <div className="text-center">
                 <div className="relative inline-flex">
-                  <div className="h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 border border-primary/20">
-                    <step.icon className="h-8 w-8 text-primary" />
+                  <div className="bg-primary/10 border-primary/20 mb-4 flex h-16 w-16 items-center justify-center rounded-2xl border">
+                    <step.icon className="text-primary h-8 w-8" />
                   </div>
-                  <span className="absolute -top-2 -right-2 h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                  <span className="bg-primary text-primary-foreground absolute -top-2 -right-2 flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold">
                     {step.number.replace("0", "")}
                   </span>
                 </div>
-                <h3 className="text-lg font-semibold mb-2">{step.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="mb-2 text-lg font-semibold">{step.title}</h3>
+                <p className="text-muted-foreground text-sm">
                   {step.description}
                 </p>
               </div>

@@ -1,6 +1,6 @@
 // Prover request/response types matching the API
 
-export type ProverStatus = 'passed' | 'failed' | 'timeout' | 'error';
+export type ProverStatus = "passed" | "failed" | "timeout" | "error";
 
 export interface ProverRequest {
   move_code: string;

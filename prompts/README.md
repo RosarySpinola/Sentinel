@@ -186,6 +186,21 @@ When all prompts are complete:
 
 ---
 
+## Additional Completed Work
+
+The following items were completed outside of the numbered prompts:
+
+| Item | Status | Location |
+|------|--------|----------|
+| Sample Move contracts | ✅ | `move/sources/` |
+| Move tests | ✅ | `move/tests/` |
+| GitHub Action for users | ✅ | `action/` |
+| Deployment documentation | ✅ | `docs/DEPLOYMENT.md` |
+| Manual setup guide | ✅ | `MANUAL_STEPS.md` |
+| Project README | ✅ | `README.md` |
+
+---
+
 ## Questions?
 
 If a prompt is unclear or has issues, document in the relevant `docs/issues/` folder and ask for clarification before proceeding.

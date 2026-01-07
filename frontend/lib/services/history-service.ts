@@ -15,9 +15,12 @@ export async function listSimulations(
   if (filters?.limit) params.set("limit", String(filters.limit));
   if (filters?.offset) params.set("offset", String(filters.offset));
 
-  const response = await fetch(`${API_BASE}/api/history/simulations?${params}`, {
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${API_BASE}/api/history/simulations?${params}`,
+    {
+      credentials: "include",
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch simulations");
   }
@@ -57,9 +60,12 @@ export async function listProverRuns(
   if (filters?.limit) params.set("limit", String(filters.limit));
   if (filters?.offset) params.set("offset", String(filters.offset));
 
-  const response = await fetch(`${API_BASE}/api/history/prover-runs?${params}`, {
-    credentials: "include",
-  });
+  const response = await fetch(
+    `${API_BASE}/api/history/prover-runs?${params}`,
+    {
+      credentials: "include",
+    }
+  );
   if (!response.ok) {
     throw new Error("Failed to fetch prover runs");
   }

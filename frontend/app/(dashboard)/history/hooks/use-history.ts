@@ -9,7 +9,9 @@ import type {
 import * as historyService from "@/lib/services/history-service";
 import { useProject } from "@/lib/contexts/project-context";
 
-export function useSimulationHistory(filters?: Omit<HistoryFilters, "projectId">) {
+export function useSimulationHistory(
+  filters?: Omit<HistoryFilters, "projectId">
+) {
   const { projectId } = useProject();
   const [simulations, setSimulations] = useState<SimulationHistory[]>([]);
   const [total, setTotal] = useState(0);
@@ -27,7 +29,9 @@ export function useSimulationHistory(filters?: Omit<HistoryFilters, "projectId">
       setSimulations(data.items);
       setTotal(data.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch simulations");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch simulations"
+      );
     } finally {
       setIsLoading(false);
     }
@@ -40,7 +44,9 @@ export function useSimulationHistory(filters?: Omit<HistoryFilters, "projectId">
   return { simulations, total, isLoading, error, refetch: fetchSimulations };
 }
 
-export function useProverRunHistory(filters?: Omit<HistoryFilters, "projectId">) {
+export function useProverRunHistory(
+  filters?: Omit<HistoryFilters, "projectId">
+) {
   const { projectId } = useProject();
   const [proverRuns, setProverRuns] = useState<ProverRunHistory[]>([]);
   const [total, setTotal] = useState(0);
@@ -58,7 +64,9 @@ export function useProverRunHistory(filters?: Omit<HistoryFilters, "projectId">)
       setProverRuns(data.items);
       setTotal(data.total);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch prover runs");
+      setError(
+        err instanceof Error ? err.message : "Failed to fetch prover runs"
+      );
     } finally {
       setIsLoading(false);
     }

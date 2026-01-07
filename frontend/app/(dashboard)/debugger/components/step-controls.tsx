@@ -33,9 +33,14 @@ export function StepControls({
   const isAtEnd = currentStep === totalSteps - 1;
 
   return (
-    <div className="border-b p-4 flex items-center justify-between">
+    <div className="flex items-center justify-between border-b p-4">
       <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" onClick={onRestart} title="Restart">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onRestart}
+          title="Restart"
+        >
           <SkipBack className="h-4 w-4" />
         </Button>
         <Button
@@ -70,7 +75,7 @@ export function StepControls({
       </div>
 
       <div className="flex items-center gap-4">
-        <span className="text-sm text-muted-foreground">
+        <span className="text-muted-foreground text-sm">
           Step {currentStep + 1} / {totalSteps}
         </span>
         <Badge variant="outline">Gas: {gasUsed}</Badge>

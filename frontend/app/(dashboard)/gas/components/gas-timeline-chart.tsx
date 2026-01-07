@@ -30,7 +30,10 @@ export function GasTimelineChart({ steps }: GasTimelineChartProps) {
       </CardHeader>
       <CardContent>
         <ResponsiveContainer width="100%" height={200}>
-          <AreaChart data={data} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+          <AreaChart
+            data={data}
+            margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
+          >
             <defs>
               <linearGradient id="gasGradient" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
@@ -52,14 +55,14 @@ export function GasTimelineChart({ steps }: GasTimelineChartProps) {
                 if (active && payload && payload.length) {
                   const item = payload[0].payload;
                   return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
+                    <div className="bg-background rounded-lg border p-2 shadow-sm">
                       <div className="text-sm font-medium">
                         Step {item.step}
                       </div>
-                      <div className="font-mono text-xs text-muted-foreground">
+                      <div className="text-muted-foreground font-mono text-xs">
                         {item.operation}
                       </div>
-                      <div className="text-sm mt-1">
+                      <div className="mt-1 text-sm">
                         Total: {item.total.toLocaleString()} gas
                       </div>
                       <div className="text-sm text-green-600">

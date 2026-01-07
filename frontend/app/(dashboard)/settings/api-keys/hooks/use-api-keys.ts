@@ -2,7 +2,10 @@
 
 import { useState, useEffect, useCallback } from "react";
 import * as apiKeysService from "@/lib/services/api-keys-service";
-import type { ApiKey, CreateApiKeyResponse } from "@/lib/services/api-keys-service";
+import type {
+  ApiKey,
+  CreateApiKeyResponse,
+} from "@/lib/services/api-keys-service";
 import { toast } from "sonner";
 
 export function useApiKeys() {

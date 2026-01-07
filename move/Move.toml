@@ -1,0 +1,10 @@
+[package]
+name = "SentinelDemo"
+version = "1.0.0"
+authors = ["Sentinel"]
+
+[addresses]
+sentinel_demo = "_"
+
+[dependencies]
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "mainnet" }

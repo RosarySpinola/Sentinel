@@ -1,11 +1,9 @@
 "use client";
 
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { UserButton, SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { WalletSelectionModal } from "@/components/wallet-selection-modal";
-import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,38 +12,57 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Wallet, LogOut, Copy, ExternalLink, Menu, User } from "lucide-react";
-import { toast } from "sonner";
 import {
-  Sheet,
-  SheetContent,
-  SheetTrigger,
-} from "@/components/ui/sheet";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Wallet,
+  LogOut,
+  Copy,
+  ExternalLink,
+  Menu,
+  Mail,
+  Loader2,
+  Globe,
+} from "lucide-react";
+import { toast } from "sonner";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { DashboardSidebar } from "./dashboard-sidebar";
+import { WalletSelectionModal } from "@/components/wallet-selection-modal";
+import { useAuth } from "@/lib/hooks/use-auth";
+import { useMoveBalance } from "@/lib/hooks/use-move-balance";
+import { useNetwork } from "@/lib/contexts/network-context";
+import { MOVEMENT_NETWORKS, NetworkType } from "@/lib/constants/networks";
 
 export function DashboardHeader() {
-  const { account, connected, disconnect, network } = useWallet();
+  const { user, isAuthenticated, logout, walletAddress } = useAuth();
+  const { formatted: balance, isLoading: isBalanceLoading } =
+    useMoveBalance(walletAddress);
+  const { network, setNetwork, networkConfig } = useNetwork();
 
   const copyAddress = () => {
-    if (account?.address) {
-      navigator.clipboard.writeText(account.address.toString());
+    if (walletAddress) {
+      navigator.clipboard.writeText(walletAddress);
       toast.success("Address copied to clipboard");
     }
   };
 
-  const shortenAddress = (address: string | { toString: () => string }) => {
-    const addr = typeof address === "string" ? address : address.toString();
-    return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+  const shortenAddress = (address: string) => {
+    return `${address.slice(0, 6)}...${address.slice(-4)}`;
   };
 
-  const getNetworkName = () => {
-    if (network?.chainId === 126) return "Mainnet";
-    if (network?.chainId === 250) return "Testnet";
-    return "Unknown";
-  };
+  // Generate DiceBear pixel-art avatar URL using address as seed
+  const avatarUrl = useMemo(() => {
+    if (!walletAddress) return null;
+    return `https://api.dicebear.com/7.x/pixel-art/svg?seed=${walletAddress}`;
+  }, [walletAddress]);
 
   return (
-    <header className="h-16 border-b border-border bg-card px-4 flex items-center justify-between">
+    <header className="border-border bg-card flex h-16 items-center justify-between border-b px-4">
       {/* Mobile menu */}
       <div className="lg:hidden">
         <Sheet>
@@ -54,30 +71,64 @@ export function DashboardHeader() {
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="left" className="p-0 w-64">
+          <SheetContent side="left" className="w-64 p-0">
             <DashboardSidebar />
           </SheetContent>
         </Sheet>
       </div>
 
-      {/* Network badge */}
-      <div className="hidden lg:flex items-center gap-2">
-        <Badge variant="outline" className="font-mono">
-          {getNetworkName()}
-        </Badge>
-      </div>
+      {/* Spacer for desktop */}
+      <div className="hidden lg:block" />
 
       {/* Right section */}
       <div className="flex items-center gap-3">
+        {/* Network selector */}
+        <Select
+          value={network}
+          onValueChange={(value: NetworkType) => setNetwork(value)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <Globe className="mr-2 h-4 w-4" />
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="testnet">Movement Testnet</SelectItem>
+            <SelectItem value="mainnet">Movement Mainnet</SelectItem>
+          </SelectContent>
+        </Select>
+
         <ThemeToggle />
 
-        {connected && account ? (
+        {isAuthenticated && walletAddress ? (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <Wallet className="h-4 w-4" />
-                <span className="font-mono text-sm">
-                  {shortenAddress(account.address)}
+              <Button variant="outline" className="h-10 gap-2 px-3">
+                {/* Balance */}
+                <span className="text-sm font-medium">
+                  {isBalanceLoading ? (
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                  ) : (
+                    `${balance} MOVE`
+                  )}
+                </span>
+
+                {/* Divider */}
+                <div className="bg-border h-5 w-px" />
+
+                {/* Avatar */}
+                <Avatar className="h-6 w-6">
+                  <AvatarImage
+                    src={avatarUrl || undefined}
+                    alt="Wallet avatar"
+                  />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                    {walletAddress?.slice(2, 4).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                {/* Address */}
+                <span className="hidden font-mono text-sm sm:inline">
+                  {shortenAddress(walletAddress)}
                 </span>
               </Button>
             </DropdownMenuTrigger>
@@ -85,9 +136,15 @@ export function DashboardHeader() {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
                   <p className="text-sm font-medium">Connected Wallet</p>
-                  <p className="text-xs text-muted-foreground font-mono">
-                    {shortenAddress(account.address)}
+                  <p className="text-muted-foreground font-mono text-xs">
+                    {shortenAddress(walletAddress)}
                   </p>
+                  {user?.email && (
+                    <div className="text-muted-foreground flex items-center gap-1 text-xs">
+                      <Mail className="h-3 w-3" />
+                      {user.email}
+                    </div>
+                  )}
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -97,7 +154,7 @@ export function DashboardHeader() {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <a
-                  href={`https://explorer.movementnetwork.xyz/account/${account.address}?network=${getNetworkName().toLowerCase()}`}
+                  href={`${networkConfig.explorer}/account/${walletAddress}`}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -107,7 +164,7 @@ export function DashboardHeader() {
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem
-                onClick={() => disconnect()}
+                onClick={() => logout()}
                 className="text-destructive"
               >
                 <LogOut className="mr-2 h-4 w-4" />
@@ -123,24 +180,6 @@ export function DashboardHeader() {
             </Button>
           </WalletSelectionModal>
         )}
-
-        {/* User authentication */}
-        <SignedIn>
-          <UserButton
-            appearance={{
-              elements: {
-                avatarBox: "h-8 w-8",
-              },
-            }}
-          />
-        </SignedIn>
-        <SignedOut>
-          <SignInButton mode="modal">
-            <Button variant="outline" size="icon">
-              <User className="h-4 w-4" />
-            </Button>
-          </SignInButton>
-        </SignedOut>
       </div>
     </header>
   );
