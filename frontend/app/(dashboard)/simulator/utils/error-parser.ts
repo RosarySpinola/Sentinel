@@ -76,6 +76,20 @@ export interface ParsedError {
   reason?: number;
 }
 
+// Regex to match Move addresses (with or without 0x prefix, any length)
+const ADDRESS_PATTERN = "(?:0x)?([a-fA-F0-9]+)";
+
+/**
+ * Normalize a Move address to short form (0x1 instead of 64 zeros + 1)
+ */
+function normalizeAddress(addr: string): string {
+  // Remove 0x prefix if present
+  const clean = addr.replace(/^0x/, "");
+  // Remove leading zeros and add 0x prefix
+  const trimmed = clean.replace(/^0+/, "") || "0";
+  return `0x${trimmed}`;
+}
+
 /**
  * Parse a VM status string into a structured error
  */
@@ -89,20 +103,26 @@ export function parseVmStatus(vmStatus: string): ParsedError {
     };
   }
 
-  // Check for common error patterns
+  // Check for common error patterns - UNEXPECTED_ERROR_FROM_KNOWN_MOVE_FUNCTION
   const executionFailedMatch = vmStatus.match(
-    /UNEXPECTED_ERROR_FROM_KNOWN_MOVE_FUNCTION.*?\[aptos_vm\]\s*(.*)/i
+    /UNEXPECTED_ERROR_FROM_KNOWN_MOVE_FUNCTION[\s\S]*?\[aptos_vm\]\s*([\s\S]*)/i
   );
   if (executionFailedMatch) {
     return parseMoveFunctionError(vmStatus, executionFailedMatch[1]);
   }
 
-  // Check for Move abort pattern
-  const abortMatch = vmStatus.match(
-    /Move abort.*?(0x[a-fA-F0-9]+)::(\w+)::(\d+)/
+  // Check for Move abort pattern (handles both 0x1 and full 64-char addresses)
+  const abortRegex = new RegExp(
+    `Move abort.*?${ADDRESS_PATTERN}::(\\w+)::(\\d+)`,
+    "i"
   );
+  const abortMatch = vmStatus.match(abortRegex);
   if (abortMatch) {
-    return parseMoveAbort(abortMatch[1], abortMatch[2], parseInt(abortMatch[3]));
+    return parseMoveAbort(
+      normalizeAddress(abortMatch[1]),
+      abortMatch[2],
+      parseInt(abortMatch[3])
+    );
   }
 
   // Check for generic execution failed
@@ -135,33 +155,44 @@ export function parseVmStatus(vmStatus: string): ParsedError {
 
 function parseMoveFunctionError(fullStatus: string, message: string): ParsedError {
   // Parse "Unexpected prologue Move abort" pattern
-  const prologueMatch = message.match(
-    /Unexpected prologue.*?(0x[a-fA-F0-9]+)::(\w+)::(\d+).*?Category:\s*(\d+)\s*Reason:\s*(\d+)/i
+  // Handles both 0x1 and full 64-char hex addresses
+  const prologueRegex = new RegExp(
+    `Unexpected prologue.*?${ADDRESS_PATTERN}::(\\w+)::(\\d+).*?Category:\\s*(\\d+)\\s*Reason:\\s*(\\d+)`,
+    "i"
   );
+  const prologueMatch = message.match(prologueRegex);
 
   if (prologueMatch) {
     const [, address, module, , category, reason] = prologueMatch;
     const categoryNum = parseInt(category);
     const reasonNum = parseInt(reason);
+    const normalizedAddr = normalizeAddress(address);
 
     // Get prologue error description
-    const prologueDesc = PROLOGUE_ERRORS[reasonNum] || `Unknown prologue error (reason: ${reasonNum})`;
+    const prologueDesc =
+      PROLOGUE_ERRORS[reasonNum] ||
+      `Unknown prologue error (reason: ${reasonNum})`;
 
     return {
       shortCode: "PROLOGUE_ERROR",
       title: "Prologue Error",
       description: prologueDesc,
-      module: `${address}::${module}`,
+      module: `${normalizedAddr}::${module}`,
       category: ABORT_CATEGORIES[categoryNum] || `Category ${categoryNum}`,
       reason: reasonNum,
       suggestion: getSuggestionForPrologueError(reasonNum),
     };
   }
 
-  // Generic move abort in message
-  const abortMatch = message.match(/(0x[a-fA-F0-9]+)::(\w+)::(\d+)/);
+  // Generic move abort in message (handles both address formats)
+  const abortRegex = new RegExp(`${ADDRESS_PATTERN}::(\\w+)::(\\d+)`, "i");
+  const abortMatch = message.match(abortRegex);
   if (abortMatch) {
-    return parseMoveAbort(abortMatch[1], abortMatch[2], parseInt(abortMatch[3]));
+    return parseMoveAbort(
+      normalizeAddress(abortMatch[1]),
+      abortMatch[2],
+      parseInt(abortMatch[3])
+    );
   }
 
   return {
