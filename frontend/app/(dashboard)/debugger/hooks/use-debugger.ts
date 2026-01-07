@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import type { TraceRequest, TraceResult, ExecutionStep } from "../types";
+import { useApiKey } from "@/lib/contexts/api-key-context";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -25,18 +26,27 @@ export function useDebugger(): UseDebuggerReturn {
   const [currentStep, setCurrentStep] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { apiKey } = useApiKey();
 
   const hasSession = trace !== null && trace.steps.length > 0;
   const currentInstruction = trace?.steps[currentStep] ?? null;
 
   const loadTrace = useCallback(async (request: TraceRequest) => {
+    if (!apiKey) {
+      setError("No API key configured. Please create one in Settings > API Keys.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
       const response = await fetch(`${API_BASE}/api/v1/trace`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-API-Key": apiKey,
+        },
         body: JSON.stringify({
           network: request.network,
           sender: request.sender,
@@ -63,7 +73,7 @@ export function useDebugger(): UseDebuggerReturn {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [apiKey]);
 
   const stepForward = useCallback(() => {
     if (trace && currentStep < trace.steps.length - 1) {

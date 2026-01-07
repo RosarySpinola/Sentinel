@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from "react";
 import { SimulationRequest, SimulationResult } from "../types";
+import { useApiKey } from "@/lib/contexts/api-key-context";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
@@ -9,8 +10,14 @@ export function useSimulation() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { apiKey } = useApiKey();
 
   const execute = useCallback(async (request: SimulationRequest) => {
+    if (!apiKey) {
+      setError("No API key configured. Please create one in Settings > API Keys.");
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
     setResult(null);
@@ -20,6 +27,7 @@ export function useSimulation() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "X-API-Key": apiKey,
         },
         body: JSON.stringify({
           network: request.network,
@@ -76,7 +84,7 @@ export function useSimulation() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [apiKey]);
 
   const reset = useCallback(() => {
     setResult(null);
