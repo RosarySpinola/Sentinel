@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { SimulationRequest, SimulationResult } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export function useSimulation() {
   const [result, setResult] = useState<SimulationResult | null>(null);
@@ -38,6 +38,8 @@ export function useSimulation() {
           type_args: request.typeArgs,
           args: request.args,
           max_gas: request.maxGas || 100000,
+          is_view: request.isView || false,
+          public_key: request.publicKey,
         }),
       });
 

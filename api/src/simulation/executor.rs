@@ -21,6 +21,11 @@ impl SimulationExecutor {
     pub async fn execute(&self, request: SimulationRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
 
+        // If this is a view function, use the /v1/view endpoint
+        if request.is_view {
+            return self.execute_view(&rpc_url, &request).await;
+        }
+
         // Convert numeric arguments to strings (Movement/Aptos API requires this for u64, u128, etc.)
         let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
             match arg {
@@ -42,23 +47,21 @@ impl SimulationExecutor {
             "arguments": stringified_args,
         });
 
-        // For simulation, we use a special public key that matches the sender address.
-        // In Aptos/Movement, for single-key ed25519 accounts, address == auth_key == sha3_256(pubkey || 0x00)
-        // We can't reverse this, so we try multiple approaches:
-        //
-        // Approach 1: Use the sender address itself as both parts of signature
-        // This works because some nodes skip auth validation during simulation
+        // Normalize sender address
         let sender_normalized = if request.sender.starts_with("0x") {
             request.sender.clone()
         } else {
             format!("0x{}", request.sender)
         };
 
-        // Pad to 64 chars (32 bytes) if needed for public key format
-        let public_key = if sender_normalized.len() < 66 {
-            format!("0x{:0>64}", &sender_normalized[2..])
+        // Use provided public_key if available, otherwise fetch from account
+        let (public_key, sequence_number) = if let Some(ref pk) = request.public_key {
+            // Get sequence number from account
+            let (_, seq) = self.get_account_auth_info(&rpc_url, &sender_normalized).await?;
+            (pk.clone(), seq)
         } else {
-            sender_normalized.clone()
+            // Fetch account info to get authentication key and sequence number
+            self.get_account_auth_info(&rpc_url, &sender_normalized).await?
         };
 
         let dummy_signature = serde_json::json!({
@@ -69,8 +72,8 @@ impl SimulationExecutor {
 
         // Build the simulation request body
         let body = serde_json::json!({
-            "sender": request.sender,
-            "sequence_number": "0",
+            "sender": sender_normalized,
+            "sequence_number": sequence_number,
             "max_gas_amount": request.max_gas.to_string(),
             "gas_unit_price": "100",
             "expiration_timestamp_secs": (chrono::Utc::now().timestamp() + 600).to_string(),
@@ -79,14 +82,12 @@ impl SimulationExecutor {
         });
 
         // Make the simulation request with query params for gas estimation
-        // These params tell the node to:
-        // - estimate_gas_unit_price: Skip gas price validation
-        // - estimate_max_gas_amount: Skip max gas validation
-        // - estimate_prioritized_gas_unit_price: Use estimated priority
+        // Note: We don't use estimate_max_gas_amount=true because Movement returns
+        // very low estimates that can fall below minimum gas requirements
         let response = self
             .http_client
             .post(format!(
-                "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_max_gas_amount=true&estimate_prioritized_gas_unit_price=false",
+                "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_prioritized_gas_unit_price=false",
                 rpc_url
             ))
             .header("Content-Type", "application/json")
@@ -105,6 +106,70 @@ impl SimulationExecutor {
         })?;
 
         self.parse_simulation_result(tx_result)
+    }
+
+    /// Execute a view function call (no signature required)
+    async fn execute_view(&self, rpc_url: &str, request: &SimulationRequest) -> Result<SimulationResult, ApiError> {
+        // Convert numeric arguments to strings
+        let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
+            match arg {
+                serde_json::Value::Number(n) => serde_json::Value::String(n.to_string()),
+                other => other.clone(),
+            }
+        }).collect();
+
+        let body = serde_json::json!({
+            "function": format!(
+                "{}::{}::{}",
+                request.module_address,
+                request.module_name,
+                request.function_name
+            ),
+            "type_arguments": request.type_args,
+            "arguments": stringified_args,
+        });
+
+        let response = self
+            .http_client
+            .post(format!("{}/view", rpc_url))
+            .header("Content-Type", "application/json")
+            .json(&body)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            return Ok(SimulationResult {
+                success: false,
+                gas_used: 0,
+                gas_unit_price: 0,
+                vm_status: "VIEW_FUNCTION_ERROR".to_string(),
+                state_changes: vec![],
+                events: vec![],
+                error: Some(super::types::SimulationError {
+                    code: "VIEW_FUNCTION_FAILED".to_string(),
+                    message: error_text,
+                    location: None,
+                }),
+            });
+        }
+
+        let result: serde_json::Value = response.json().await?;
+
+        // View functions return the result directly (usually an array of return values)
+        Ok(SimulationResult {
+            success: true,
+            gas_used: 0,  // View functions don't consume gas
+            gas_unit_price: 0,
+            vm_status: "Executed successfully".to_string(),
+            state_changes: vec![],  // View functions don't change state
+            events: vec![SimEvent {
+                r#type: "view_function_result".to_string(),
+                data: result,
+                sequence_number: 0,
+            }],
+            error: None,
+        })
     }
 
     fn parse_simulation_result(&self, result: &serde_json::Value) -> Result<SimulationResult, ApiError> {
@@ -198,6 +263,38 @@ impl SimulationExecutor {
         }).collect()
     }
 
+    /// Fetches account sequence number and returns a simulation-compatible public key.
+    /// For simulation, we use a well-known valid Ed25519 public key since the signature
+    /// is not actually verified - only the format needs to be valid.
+    async fn get_account_auth_info(&self, rpc_url: &str, address: &str) -> Result<(String, String), ApiError> {
+        // Use a well-known valid Ed25519 public key for simulation
+        // This is the Ed25519 base point which is always a valid curve point
+        // The actual key doesn't matter for simulation - only the format needs to be valid
+        let simulation_public_key = "0x3b6a27bcceb6a42d62a3a8d02a6f0d73653215771de243a63ac048a18b59da29";
+
+        let account_url = format!("{}/accounts/{}", rpc_url, address);
+
+        let response = self.http_client
+            .get(&account_url)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            // Account may not exist - use default sequence number
+            return Ok((simulation_public_key.to_string(), "0".to_string()));
+        }
+
+        let account_info: serde_json::Value = response.json().await?;
+
+        // Extract sequence number
+        let sequence_number = account_info.get("sequence_number")
+            .and_then(|v| v.as_str())
+            .unwrap_or("0")
+            .to_string();
+
+        Ok((simulation_public_key.to_string(), sequence_number))
+    }
+
     fn parse_events(&self, result: &serde_json::Value) -> Vec<SimEvent> {
         let events = result.get("events")
             .and_then(|v| v.as_array())
@@ -239,6 +336,8 @@ impl SimulationExecutor {
                 type_args: scenario.type_args.clone(),
                 args: scenario.args.clone(),
                 max_gas: scenario.max_gas.unwrap_or(100_000),
+                is_view: false,  // Batch simulations are for entry functions
+                public_key: None,
             };
 
             let sim_result = self.execute(sim_request).await;
