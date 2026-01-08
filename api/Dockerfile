@@ -32,7 +32,7 @@ RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/
 COPY --from=builder /app/target/release/sentinel-api .
 
 # Expose port
-EXPOSE 8080
+EXPOSE 4004
 
 # Set environment
 ENV RUST_LOG=sentinel_api=info,tower_http=debug

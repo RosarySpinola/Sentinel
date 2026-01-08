@@ -81,8 +81,8 @@ else
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_REPLACE_ME
 CLERK_SECRET_KEY=sk_test_REPLACE_ME
 
-# API URL (optional - falls back to localhost:8080)
-NEXT_PUBLIC_API_URL=http://localhost:8080
+# API URL (optional - falls back to localhost:4004)
+NEXT_PUBLIC_API_URL=http://localhost:4004
 
 # Sentry (optional - for error tracking)
 # NEXT_PUBLIC_SENTRY_DSN=

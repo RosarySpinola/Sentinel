@@ -14,7 +14,7 @@ impl Config {
 
         Self {
             port: env::var("PORT")
-                .unwrap_or_else(|_| "8080".to_string())
+                .unwrap_or_else(|_| "4004".to_string())
                 .parse()
                 .expect("PORT must be a number"),
             movement_rpc_mainnet: env::var("MOVEMENT_RPC_MAINNET")

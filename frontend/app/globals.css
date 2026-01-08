@@ -120,6 +120,26 @@
   }
   body {
     @apply bg-background text-foreground;
+
+    /* Privy modal customization - Sentinel dark theme */
+    --privy-color-background: #1a1a1a;
+    --privy-color-background-2: #262626;
+    --privy-color-background-3: #333333;
+    --privy-color-foreground: #fafafa;
+    --privy-color-foreground-2: #a3a3a3;
+    --privy-color-foreground-3: #737373;
+    --privy-color-foreground-4: #525252;
+    --privy-color-accent: #8b5cf6;
+    --privy-color-accent-light: #a78bfa;
+    --privy-color-accent-lightest: #c4b5fd;
+    --privy-color-accent-dark: #7c3aed;
+    --privy-color-accent-darkest: #6d28d9;
+    --privy-color-success: #22c55e;
+    --privy-color-error: #ef4444;
+    --privy-color-error-light: #fca5a5;
+    --privy-border-radius-sm: 6px;
+    --privy-border-radius-md: 8px;
+    --privy-border-radius-lg: 10px;
   }
 }
 

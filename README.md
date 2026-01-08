@@ -49,7 +49,7 @@ npm run dev
 # API
 cd api
 cargo run
-# → http://localhost:8080
+# → http://localhost:4004
 ```
 
 ### Demo Move Contracts
