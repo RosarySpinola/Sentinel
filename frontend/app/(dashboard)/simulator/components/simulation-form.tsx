@@ -20,18 +20,19 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
+  // Demo: Get coin balance - a view function that works without funds
   const [formData, setFormData] = useState({
-    sender: "",
+    sender: "0x1", // System address, always exists
     moduleAddress: "0x1",
-    moduleName: "aptos_account",
-    functionName: "transfer",
+    moduleName: "coin",
+    functionName: "balance",
     maxGas: 100000,
   });
 
-  const [isView, setIsView] = useState(false);
+  const [isView, setIsView] = useState(true); // Default to view function for demo
 
-  const [typeArgs, setTypeArgs] = useState<string[]>([]);
-  const [args, setArgs] = useState<string[]>(['"0x2"', "100"]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
+  const [args, setArgs] = useState<string[]>(['"0x1"']); // Query system address balance
 
   // Auto-fill sender when wallet connects
   const senderAddress = formData.sender || account?.address?.toString() || "";
