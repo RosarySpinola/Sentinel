@@ -152,8 +152,8 @@ impl ProverExecutor {
         duration_ms: u64,
         module_name: &str,
     ) -> Result<ProverResult, ApiError> {
-        // Check for SUCCESS at the end
-        let is_success = output.contains("SUCCESS") && exit_code == 0;
+        // Check for SUCCESS - can be "SUCCESS" or "Result": "Success"
+        let is_success = (output.contains("SUCCESS") || output.contains("\"Result\": \"Success\"")) && exit_code == 0;
 
         // Parse any errors or warnings
         let specs = self.parse_spec_results(output, module_name);
