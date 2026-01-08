@@ -57,7 +57,12 @@ export function Providers({ children }: { children: ReactNode }) {
           <PrivyProvider
             appId={PRIVY_APP_ID!}
             config={{
-              loginMethods: ["email", "google", "twitter", "discord", "github"],
+              loginMethods: ["email"],
+              appearance: {
+                theme: "dark",
+                accentColor: "#8b5cf6",
+                logo: "/logo.png",
+              },
             }}
           >
             <AuthProviderWithPrivy>
