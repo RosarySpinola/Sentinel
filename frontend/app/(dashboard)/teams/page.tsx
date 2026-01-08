@@ -1,45 +1,23 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Users } from "lucide-react";
-import * as teamsService from "@/lib/services/teams-service";
-import type { Team } from "@/lib/types/team";
+import { useTeams } from "./hooks/use-teams";
 import { CreateTeamDialog } from "./components/create-team-dialog";
 import { useRouter } from "next/navigation";
-import { toast } from "sonner";
 
 export default function TeamsPage() {
   const router = useRouter();
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { teams, isLoading, createTeam, walletAddress } = useTeams();
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
-  const fetchTeams = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      const data = await teamsService.listTeams();
-      setTeams(data);
-    } catch (err) {
-      toast.error("Failed to fetch teams");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchTeams();
-  }, [fetchTeams]);
-
   const handleCreate = async (name: string) => {
-    try {
-      const team = await teamsService.createTeam({ name });
-      setTeams((prev) => [team, ...prev]);
-      toast.success("Team created successfully");
-    } catch {
-      toast.error("Failed to create team");
+    const team = await createTeam({ name });
+    if (team) {
+      setCreateDialogOpen(false);
     }
   };
 
@@ -48,6 +26,18 @@ export default function TeamsPage() {
     admin: "bg-blue-500/10 text-blue-500",
     member: "bg-gray-500/10 text-gray-400",
   };
+
+  if (!walletAddress) {
+    return (
+      <div className="flex flex-col items-center justify-center p-6 py-12 text-center">
+        <Users className="text-muted-foreground mb-4 h-12 w-12" />
+        <h2 className="mb-2 text-lg font-semibold">Connect Your Wallet</h2>
+        <p className="text-muted-foreground">
+          Please connect your wallet to view and manage teams.
+        </p>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (

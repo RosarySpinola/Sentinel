@@ -13,6 +13,14 @@ pub struct SimulationRequest {
     pub args: Vec<serde_json::Value>,
     #[serde(default = "default_max_gas")]
     pub max_gas: u64,
+    /// If true, use the /v1/view endpoint (no signature needed)
+    /// If false, use /v1/transactions/simulate (requires auth for entry functions)
+    #[serde(default)]
+    pub is_view: bool,
+    /// Optional public key for entry function simulation
+    /// Required for entry functions on Movement Network which validates auth
+    #[serde(default)]
+    pub public_key: Option<String>,
 }
 
 fn default_max_gas() -> u64 {

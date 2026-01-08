@@ -7,6 +7,8 @@ export interface SimulationRequest {
   typeArgs: string[];
   args: unknown[];
   maxGas?: number;
+  isView?: boolean;
+  publicKey?: string;
 }
 
 export interface SimulationResult {

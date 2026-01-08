@@ -8,11 +8,11 @@ import type {
   TeamRole,
 } from "@/lib/types/team";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "";
-
-export async function listTeams(): Promise<Team[]> {
-  const response = await fetch(`${API_BASE}/api/teams`, {
-    credentials: "include",
+export async function listTeams(walletAddress: string): Promise<Team[]> {
+  const response = await fetch(`/api/teams`, {
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to fetch teams");
@@ -22,10 +22,13 @@ export async function listTeams(): Promise<Team[]> {
 }
 
 export async function getTeam(
-  id: string
+  id: string,
+  walletAddress: string
 ): Promise<Team & { members: TeamMember[]; invites: TeamInvite[] }> {
-  const response = await fetch(`${API_BASE}/api/teams/${id}`, {
-    credentials: "include",
+  const response = await fetch(`/api/teams/${id}`, {
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to fetch team");
@@ -33,11 +36,16 @@ export async function getTeam(
   return response.json();
 }
 
-export async function createTeam(input: CreateTeamInput): Promise<Team> {
-  const response = await fetch(`${API_BASE}/api/teams`, {
+export async function createTeam(
+  input: CreateTeamInput,
+  walletAddress: string
+): Promise<Team> {
+  const response = await fetch(`/api/teams`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -48,12 +56,15 @@ export async function createTeam(input: CreateTeamInput): Promise<Team> {
 
 export async function updateTeam(
   id: string,
-  input: UpdateTeamInput
+  input: UpdateTeamInput,
+  walletAddress: string
 ): Promise<Team> {
-  const response = await fetch(`${API_BASE}/api/teams/${id}`, {
+  const response = await fetch(`/api/teams/${id}`, {
     method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -62,10 +73,15 @@ export async function updateTeam(
   return response.json();
 }
 
-export async function deleteTeam(id: string): Promise<void> {
-  const response = await fetch(`${API_BASE}/api/teams/${id}`, {
+export async function deleteTeam(
+  id: string,
+  walletAddress: string
+): Promise<void> {
+  const response = await fetch(`/api/teams/${id}`, {
     method: "DELETE",
-    credentials: "include",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to delete team");
@@ -74,12 +90,15 @@ export async function deleteTeam(id: string): Promise<void> {
 
 export async function inviteMember(
   teamId: string,
-  input: InviteMemberInput
+  input: InviteMemberInput,
+  walletAddress: string
 ): Promise<TeamInvite> {
-  const response = await fetch(`${API_BASE}/api/teams/${teamId}/members`, {
+  const response = await fetch(`/api/teams/${teamId}/members`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
     body: JSON.stringify(input),
   });
   if (!response.ok) {
@@ -90,15 +109,15 @@ export async function inviteMember(
 
 export async function removeMember(
   teamId: string,
-  userId: string
+  userId: string,
+  walletAddress: string
 ): Promise<void> {
-  const response = await fetch(
-    `${API_BASE}/api/teams/${teamId}/members/${userId}`,
-    {
-      method: "DELETE",
-      credentials: "include",
-    }
-  );
+  const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
+    method: "DELETE",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
+  });
   if (!response.ok) {
     throw new Error("Failed to remove member");
   }
@@ -107,26 +126,31 @@ export async function removeMember(
 export async function updateMemberRole(
   teamId: string,
   userId: string,
-  role: TeamRole
+  role: TeamRole,
+  walletAddress: string
 ): Promise<void> {
-  const response = await fetch(
-    `${API_BASE}/api/teams/${teamId}/members/${userId}`,
-    {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify({ role }),
-    }
-  );
+  const response = await fetch(`/api/teams/${teamId}/members/${userId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+      "x-wallet-address": walletAddress,
+    },
+    body: JSON.stringify({ role }),
+  });
   if (!response.ok) {
     throw new Error("Failed to update member role");
   }
 }
 
-export async function acceptInvite(token: string): Promise<Team> {
-  const response = await fetch(`${API_BASE}/api/teams/invites/${token}`, {
+export async function acceptInvite(
+  token: string,
+  walletAddress: string
+): Promise<Team> {
+  const response = await fetch(`/api/teams/invites/${token}`, {
     method: "POST",
-    credentials: "include",
+    headers: {
+      "x-wallet-address": walletAddress,
+    },
   });
   if (!response.ok) {
     throw new Error("Failed to accept invite");

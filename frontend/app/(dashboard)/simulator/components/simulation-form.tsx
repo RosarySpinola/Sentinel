@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Zap } from "lucide-react";
 import { SimulationRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
@@ -26,6 +27,8 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
     functionName: "transfer",
     maxGas: 100000,
   });
+
+  const [isView, setIsView] = useState(false);
 
   const [typeArgs, setTypeArgs] = useState<string[]>([]);
   const [args, setArgs] = useState<string[]>(['"0x2"', "100"]);
@@ -54,6 +57,7 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
       typeArgs,
       args: parsedArgs,
       maxGas: formData.maxGas,
+      isView,
     });
   };
 
@@ -198,20 +202,36 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
             ))}
           </div>
 
-          {/* Max Gas */}
-          <div className="space-y-2">
-            <Label>Max Gas</Label>
-            <Input
-              type="number"
-              value={formData.maxGas}
-              onChange={(e) =>
-                setFormData({
-                  ...formData,
-                  maxGas: parseInt(e.target.value) || 100000,
-                })
-              }
+          {/* Is View Function Toggle */}
+          <div className="flex items-center justify-between rounded-lg border p-3">
+            <div className="space-y-0.5">
+              <Label>View Function</Label>
+              <p className="text-muted-foreground text-xs">
+                Enable for read-only functions (no signature required)
+              </p>
+            </div>
+            <Switch
+              checked={isView}
+              onCheckedChange={setIsView}
             />
           </div>
+
+          {/* Max Gas - only show for entry functions */}
+          {!isView && (
+            <div className="space-y-2">
+              <Label>Max Gas</Label>
+              <Input
+                type="number"
+                value={formData.maxGas}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    maxGas: parseInt(e.target.value) || 100000,
+                  })
+                }
+              />
+            </div>
+          )}
 
           {/* Submit */}
           <Button
