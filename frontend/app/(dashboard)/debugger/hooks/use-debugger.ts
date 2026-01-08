@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import type { TraceRequest, TraceResult, ExecutionStep } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
 
 interface UseDebuggerReturn {
   trace: TraceResult | null;
