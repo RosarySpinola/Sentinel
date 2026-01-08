@@ -1532,6 +1532,137 @@ export type Database = {
         }
         Relationships: []
       }
+      ember_chat_messages: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_seller: boolean | null
+          message: string
+          message_type: string | null
+          metadata: Json | null
+          sender_address: string
+          sender_name: string | null
+          stream_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_seller?: boolean | null
+          message: string
+          message_type?: string | null
+          metadata?: Json | null
+          sender_address: string
+          sender_name?: string | null
+          stream_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_seller?: boolean | null
+          message?: string
+          message_type?: string | null
+          metadata?: Json | null
+          sender_address?: string
+          sender_name?: string | null
+          stream_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ember_chat_messages_stream_id_fkey"
+            columns: ["stream_id"]
+            isOneToOne: false
+            referencedRelation: "ember_streams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ember_order_details: {
+        Row: {
+          buyer_address: string
+          created_at: string | null
+          id: string
+          product_id: number
+          quantity: number
+          seller_address: string
+          shipping_address: string
+          shipping_city: string
+          shipping_name: string
+          shipping_notes: string | null
+          shipping_phone: string
+          shipping_postal_code: string | null
+          total_price: number
+          tx_hash: string
+          updated_at: string | null
+        }
+        Insert: {
+          buyer_address: string
+          created_at?: string | null
+          id?: string
+          product_id: number
+          quantity?: number
+          seller_address: string
+          shipping_address: string
+          shipping_city: string
+          shipping_name: string
+          shipping_notes?: string | null
+          shipping_phone: string
+          shipping_postal_code?: string | null
+          total_price: number
+          tx_hash: string
+          updated_at?: string | null
+        }
+        Update: {
+          buyer_address?: string
+          created_at?: string | null
+          id?: string
+          product_id?: number
+          quantity?: number
+          seller_address?: string
+          shipping_address?: string
+          shipping_city?: string
+          shipping_name?: string
+          shipping_notes?: string | null
+          shipping_phone?: string
+          shipping_postal_code?: string | null
+          total_price?: number
+          tx_hash?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      ember_streams: {
+        Row: {
+          created_at: string | null
+          ended_at: string | null
+          featured_product_ids: number[] | null
+          id: string
+          is_live: boolean | null
+          seller_address: string
+          started_at: string | null
+          youtube_url: string
+        }
+        Insert: {
+          created_at?: string | null
+          ended_at?: string | null
+          featured_product_ids?: number[] | null
+          id?: string
+          is_live?: boolean | null
+          seller_address: string
+          started_at?: string | null
+          youtube_url: string
+        }
+        Update: {
+          created_at?: string | null
+          ended_at?: string | null
+          featured_product_ids?: number[] | null
+          id?: string
+          is_live?: boolean | null
+          seller_address?: string
+          started_at?: string | null
+          youtube_url?: string
+        }
+        Relationships: []
+      }
       frameworks: {
         Row: {
           branch_slug: string
@@ -3819,6 +3950,144 @@ export type Database = {
           },
         ]
       }
+      sentinel_debugger_runs: {
+        Row: {
+          arguments: Json | null
+          created_at: string | null
+          function_name: string
+          id: string
+          module_address: string
+          module_name: string
+          network: string
+          project_id: string | null
+          result: Json | null
+          sender_address: string
+          total_gas: number | null
+          total_steps: number | null
+          type_arguments: Json | null
+          wallet_address: string
+        }
+        Insert: {
+          arguments?: Json | null
+          created_at?: string | null
+          function_name: string
+          id?: string
+          module_address: string
+          module_name: string
+          network: string
+          project_id?: string | null
+          result?: Json | null
+          sender_address: string
+          total_gas?: number | null
+          total_steps?: number | null
+          type_arguments?: Json | null
+          wallet_address: string
+        }
+        Update: {
+          arguments?: Json | null
+          created_at?: string | null
+          function_name?: string
+          id?: string
+          module_address?: string
+          module_name?: string
+          network?: string
+          project_id?: string | null
+          result?: Json | null
+          sender_address?: string
+          total_gas?: number | null
+          total_steps?: number | null
+          type_arguments?: Json | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sentinel_debugger_runs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "sentinel_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sentinel_debugger_runs_wallet_address_fkey"
+            columns: ["wallet_address"]
+            isOneToOne: false
+            referencedRelation: "sentinel_users"
+            referencedColumns: ["wallet_address"]
+          },
+        ]
+      }
+      sentinel_gas_analyses: {
+        Row: {
+          arguments: Json | null
+          created_at: string | null
+          function_name: string
+          id: string
+          module_address: string
+          module_name: string
+          network: string
+          project_id: string | null
+          result: Json | null
+          sender_address: string
+          suggestions_count: number | null
+          top_function: string | null
+          top_operation: string | null
+          total_gas: number | null
+          type_arguments: Json | null
+          wallet_address: string
+        }
+        Insert: {
+          arguments?: Json | null
+          created_at?: string | null
+          function_name: string
+          id?: string
+          module_address: string
+          module_name: string
+          network: string
+          project_id?: string | null
+          result?: Json | null
+          sender_address: string
+          suggestions_count?: number | null
+          top_function?: string | null
+          top_operation?: string | null
+          total_gas?: number | null
+          type_arguments?: Json | null
+          wallet_address: string
+        }
+        Update: {
+          arguments?: Json | null
+          created_at?: string | null
+          function_name?: string
+          id?: string
+          module_address?: string
+          module_name?: string
+          network?: string
+          project_id?: string | null
+          result?: Json | null
+          sender_address?: string
+          suggestions_count?: number | null
+          top_function?: string | null
+          top_operation?: string | null
+          total_gas?: number | null
+          type_arguments?: Json | null
+          wallet_address?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sentinel_gas_analyses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "sentinel_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sentinel_gas_analyses_wallet_address_fkey"
+            columns: ["wallet_address"]
+            isOneToOne: false
+            referencedRelation: "sentinel_users"
+            referencedColumns: ["wallet_address"]
+          },
+        ]
+      }
       sentinel_projects: {
         Row: {
           created_at: string | null
@@ -3924,6 +4193,7 @@ export type Database = {
           module_name: string
           network: string
           project_id: string | null
+          result: Json | null
           sender_address: string
           state_changes: Json | null
           success: boolean
@@ -3943,6 +4213,7 @@ export type Database = {
           module_name: string
           network: string
           project_id?: string | null
+          result?: Json | null
           sender_address: string
           state_changes?: Json | null
           success: boolean
@@ -3962,6 +4233,7 @@ export type Database = {
           module_name?: string
           network?: string
           project_id?: string | null
+          result?: Json | null
           sender_address?: string
           state_changes?: Json | null
           success?: boolean
@@ -6540,6 +6812,84 @@ export type Database = {
             referencedColumns: ["hedera_account_id"]
           },
         ]
+      }
+      velox_bid_transactions: {
+        Row: {
+          bid_amount: string | null
+          bid_tx_hash: string
+          created_at: string | null
+          id: number
+          intent_id: string
+          solver_address: string
+        }
+        Insert: {
+          bid_amount?: string | null
+          bid_tx_hash: string
+          created_at?: string | null
+          id?: number
+          intent_id: string
+          solver_address: string
+        }
+        Update: {
+          bid_amount?: string | null
+          bid_tx_hash?: string
+          created_at?: string | null
+          id?: number
+          intent_id?: string
+          solver_address?: string
+        }
+        Relationships: []
+      }
+      velox_maker_transactions: {
+        Row: {
+          created_at: string | null
+          id: number
+          intent_id: string
+          maker_tx_hash: string
+          user_address: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          intent_id: string
+          maker_tx_hash: string
+          user_address: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          intent_id?: string
+          maker_tx_hash?: string
+          user_address?: string
+        }
+        Relationships: []
+      }
+      velox_taker_transactions: {
+        Row: {
+          created_at: string | null
+          fill_amount: string | null
+          id: number
+          intent_id: string
+          solver_address: string
+          taker_tx_hash: string
+        }
+        Insert: {
+          created_at?: string | null
+          fill_amount?: string | null
+          id?: number
+          intent_id: string
+          solver_address: string
+          taker_tx_hash: string
+        }
+        Update: {
+          created_at?: string | null
+          fill_amount?: string | null
+          id?: number
+          intent_id?: string
+          solver_address?: string
+          taker_tx_hash?: string
+        }
+        Relationships: []
       }
       wallets: {
         Row: {
