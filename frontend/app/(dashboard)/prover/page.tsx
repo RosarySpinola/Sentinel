@@ -30,7 +30,8 @@ import type { ProverStatus, ModuleResult, SpecResult } from "./types";
 // This example demonstrates Move Prover capabilities for DeFi safety
 const DEFAULT_CODE = `module 0x1::vault {
     /// A simple vault that tracks deposits
-    struct Vault has key, store {
+    /// Has 'drop' so it can be consumed when creating new instances
+    struct Vault has drop, copy {
         balance: u64,
         total_deposits: u64,
     }
@@ -39,8 +40,8 @@ const DEFAULT_CODE = `module 0x1::vault {
     /// Spec ensures balance never overflows and is correctly updated
     spec deposit {
         aborts_if vault.balance + amount > MAX_U64;
-        ensures result.balance == old(vault).balance + amount;
-        ensures result.total_deposits == old(vault).total_deposits + 1;
+        ensures result.balance == vault.balance + amount;
+        ensures result.total_deposits == vault.total_deposits + 1;
     }
     public fun deposit(vault: Vault, amount: u64): Vault {
         Vault {
@@ -53,7 +54,7 @@ const DEFAULT_CODE = `module 0x1::vault {
     /// Spec ensures you cannot withdraw more than available
     spec withdraw {
         aborts_if amount > vault.balance;
-        ensures result.balance == old(vault).balance - amount;
+        ensures result.balance == vault.balance - amount;
     }
     public fun withdraw(vault: Vault, amount: u64): Vault {
         assert!(amount <= vault.balance, 1);
