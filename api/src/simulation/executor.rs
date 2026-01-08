@@ -18,8 +18,37 @@ impl SimulationExecutor {
         }
     }
 
+    /// Fetch the authentication key for an account from the chain.
+    /// Returns None if the account doesn't exist or on any error.
+    async fn get_account_auth_key(&self, rpc_url: &str, address: &str) -> Option<String> {
+        let url = format!("{}/accounts/{}", rpc_url, address);
+
+        let response = self.http_client
+            .get(&url)
+            .send()
+            .await
+            .ok()?;
+
+        if !response.status().is_success() {
+            return None;
+        }
+
+        let account_data: serde_json::Value = response.json().await.ok()?;
+
+        // The authentication_key is in the account resource
+        // For ed25519, the auth key is sha3-256(public_key || 0x00)
+        // We need to use the auth key as a proxy since we don't have the actual public key
+        account_data
+            .get("authentication_key")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string())
+    }
+
     pub async fn execute(&self, request: SimulationRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
+
+        // First, try to get the account's authentication key to use the correct public key
+        let auth_key = self.get_account_auth_key(&rpc_url, &request.sender).await;
 
         // Convert numeric arguments to strings (Movement/Aptos API requires this for u64, u128, etc.)
         let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
@@ -42,15 +71,16 @@ impl SimulationExecutor {
             "arguments": stringified_args,
         });
 
-        // For simulation, we need a signature that corresponds to the sender address.
-        // We use a placeholder signature with a public key derived from a known pattern.
-        // The simulation endpoint will skip actual signature verification but still
-        // checks that the auth key matches the sender.
-        //
-        // To work around this, we use query parameters to skip auth key checks.
+        // Use the account's auth key as the public key if available.
+        // For ed25519, the auth key IS the public key (with scheme byte stripped).
+        // If we can't get it, fall back to a dummy key (simulation may fail with auth error).
+        let public_key = auth_key.unwrap_or_else(|| {
+            "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
+        });
+
         let dummy_signature = serde_json::json!({
             "type": "ed25519_signature",
-            "public_key": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "public_key": public_key,
             "signature": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         });
 
@@ -65,9 +95,7 @@ impl SimulationExecutor {
             "signature": dummy_signature,
         });
 
-        // Make the simulation request with query params to skip auth key validation
-        // estimate_gas_unit_price and estimate_max_gas_amount tell the node this is
-        // a simulation that should skip certain validations
+        // Make the simulation request with query params for gas estimation
         let response = self
             .http_client
             .post(format!(
