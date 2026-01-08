@@ -60,17 +60,11 @@ export function useProver(): UseProverReturn {
     setError(null);
   }, []);
 
-  const loadDemo = useCallback((demoResult: ProverResult) => {
-    setResult(demoResult);
-    setError(null);
-  }, []);
-
   return {
     result,
     isLoading,
     error,
     runProver,
-    loadDemo,
     clear,
   };
 }
