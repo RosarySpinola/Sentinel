@@ -80,6 +80,7 @@ export async function GET(request: NextRequest) {
 
     const shinamiKey = process.env.SHINAMI_KEY;
 
+    // Try Shinami first if key is available, otherwise use public endpoint
     const baseUrl = shinamiKey
       ? SHINAMI_URLS[network as keyof typeof SHINAMI_URLS] || SHINAMI_URLS.testnet
       : PUBLIC_URLS[network as keyof typeof PUBLIC_URLS] || PUBLIC_URLS.testnet;
@@ -91,7 +92,30 @@ export async function GET(request: NextRequest) {
       headers["X-Api-Key"] = shinamiKey;
     }
 
-    const response = await fetch(url, { headers });
+    let response: Response;
+    try {
+      response = await fetch(url, { headers });
+    } catch (fetchError) {
+      // Network error - try fallback to public endpoint if we were using Shinami
+      if (shinamiKey) {
+        const fallbackUrl = `${PUBLIC_URLS[network as keyof typeof PUBLIC_URLS] || PUBLIC_URLS.testnet}/${path}`;
+        response = await fetch(fallbackUrl);
+      } else {
+        throw fetchError;
+      }
+    }
+
+    // Handle non-JSON responses (like HTML error pages)
+    const contentType = response.headers.get("content-type");
+    if (!contentType?.includes("application/json")) {
+      const text = await response.text();
+      console.error("RPC returned non-JSON response:", text.slice(0, 500));
+      return NextResponse.json(
+        { error: "RPC returned non-JSON response", status: response.status },
+        { status: response.status || 502 }
+      );
+    }
+
     const data = await response.json();
 
     if (!response.ok) {

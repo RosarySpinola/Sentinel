@@ -41,9 +41,15 @@ export function useMoveBalance(
       const coinBalance = BigInt((resources as { coin: { value: string } }).coin.value);
       setBalance(coinBalance);
     } catch (err) {
-      // Account might not have MOVE yet
-      if ((err as Error)?.message?.includes("Resource not found") ||
-          (err as Error)?.message?.includes("404")) {
+      const errorMsg = (err as Error)?.message || "";
+      // Account might not have MOVE yet or resource doesn't exist
+      if (errorMsg.includes("Resource not found") ||
+          errorMsg.includes("404") ||
+          errorMsg.includes("not found")) {
+        setBalance(BigInt(0));
+      } else if (errorMsg.includes("500") || errorMsg.includes("502") || errorMsg.includes("RPC")) {
+        // Network/RPC errors - set balance to 0 but log for debugging
+        console.warn("RPC error fetching MOVE balance, network may be unavailable:", err);
         setBalance(BigInt(0));
       } else {
         setError(err as Error);
