@@ -18,37 +18,8 @@ impl SimulationExecutor {
         }
     }
 
-    /// Fetch the authentication key for an account from the chain.
-    /// Returns None if the account doesn't exist or on any error.
-    async fn get_account_auth_key(&self, rpc_url: &str, address: &str) -> Option<String> {
-        let url = format!("{}/accounts/{}", rpc_url, address);
-
-        let response = self.http_client
-            .get(&url)
-            .send()
-            .await
-            .ok()?;
-
-        if !response.status().is_success() {
-            return None;
-        }
-
-        let account_data: serde_json::Value = response.json().await.ok()?;
-
-        // The authentication_key is in the account resource
-        // For ed25519, the auth key is sha3-256(public_key || 0x00)
-        // We need to use the auth key as a proxy since we don't have the actual public key
-        account_data
-            .get("authentication_key")
-            .and_then(|v| v.as_str())
-            .map(|s| s.to_string())
-    }
-
     pub async fn execute(&self, request: SimulationRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
-
-        // First, try to get the account's authentication key to use the correct public key
-        let auth_key = self.get_account_auth_key(&rpc_url, &request.sender).await;
 
         // Convert numeric arguments to strings (Movement/Aptos API requires this for u64, u128, etc.)
         let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
@@ -71,12 +42,24 @@ impl SimulationExecutor {
             "arguments": stringified_args,
         });
 
-        // Use the account's auth key as the public key if available.
-        // For ed25519, the auth key IS the public key (with scheme byte stripped).
-        // If we can't get it, fall back to a dummy key (simulation may fail with auth error).
-        let public_key = auth_key.unwrap_or_else(|| {
-            "0x0000000000000000000000000000000000000000000000000000000000000000".to_string()
-        });
+        // For simulation, we use a special public key that matches the sender address.
+        // In Aptos/Movement, for single-key ed25519 accounts, address == auth_key == sha3_256(pubkey || 0x00)
+        // We can't reverse this, so we try multiple approaches:
+        //
+        // Approach 1: Use the sender address itself as both parts of signature
+        // This works because some nodes skip auth validation during simulation
+        let sender_normalized = if request.sender.starts_with("0x") {
+            request.sender.clone()
+        } else {
+            format!("0x{}", request.sender)
+        };
+
+        // Pad to 64 chars (32 bytes) if needed for public key format
+        let public_key = if sender_normalized.len() < 66 {
+            format!("0x{:0>64}", &sender_normalized[2..])
+        } else {
+            sender_normalized.clone()
+        };
 
         let dummy_signature = serde_json::json!({
             "type": "ed25519_signature",
@@ -96,10 +79,14 @@ impl SimulationExecutor {
         });
 
         // Make the simulation request with query params for gas estimation
+        // These params tell the node to:
+        // - estimate_gas_unit_price: Skip gas price validation
+        // - estimate_max_gas_amount: Skip max gas validation
+        // - estimate_prioritized_gas_unit_price: Use estimated priority
         let response = self
             .http_client
             .post(format!(
-                "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_max_gas_amount=true",
+                "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_max_gas_amount=true&estimate_prioritized_gas_unit_price=false",
                 rpc_url
             ))
             .header("Content-Type", "application/json")
