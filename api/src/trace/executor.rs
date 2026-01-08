@@ -44,15 +44,23 @@ impl TraceExecutor {
             }
         }).collect();
 
-        // Build the transaction payload
+        // First, try to get module info to check if function is entry or view
+        let is_view = self.check_if_view_function(&rpc_url, &request).await;
+
+        if is_view {
+            return self.execute_view_trace(&rpc_url, &request, &stringified_args).await;
+        }
+
+        // Build the transaction payload for entry functions
+        let function_path = format!(
+            "{}::{}::{}",
+            request.module_address,
+            request.module_name,
+            request.function_name
+        );
         let payload = serde_json::json!({
             "type": "entry_function_payload",
-            "function": format!(
-                "{}::{}::{}",
-                request.module_address,
-                request.module_name,
-                request.function_name
-            ),
+            "function": function_path,
             "type_arguments": request.type_args,
             "arguments": stringified_args,
         });
@@ -110,6 +118,165 @@ impl TraceExecutor {
         })?;
 
         self.construct_trace(&request, tx_result)
+    }
+
+    /// Check if a function is a view function by querying the module ABI
+    async fn check_if_view_function(&self, rpc_url: &str, request: &TraceRequest) -> bool {
+        let module_url = format!(
+            "{}/accounts/{}/module/{}",
+            rpc_url, request.module_address, request.module_name
+        );
+
+        let response = match self.build_get(&module_url).send().await {
+            Ok(r) => r,
+            Err(_) => return false,
+        };
+
+        if !response.status().is_success() {
+            return false;
+        }
+
+        let module_info: serde_json::Value = match response.json().await {
+            Ok(v) => v,
+            Err(_) => return false,
+        };
+
+        // Check exposed_functions for the function
+        if let Some(abi) = module_info.get("abi") {
+            if let Some(functions) = abi.get("exposed_functions").and_then(|f| f.as_array()) {
+                for func in functions {
+                    if let Some(name) = func.get("name").and_then(|n| n.as_str()) {
+                        if name == request.function_name {
+                            // Check if it's a view function (is_view: true OR is_entry: false)
+                            let is_view = func.get("is_view").and_then(|v| v.as_bool()).unwrap_or(false);
+                            let is_entry = func.get("is_entry").and_then(|v| v.as_bool()).unwrap_or(false);
+                            return is_view || !is_entry;
+                        }
+                    }
+                }
+            }
+        }
+
+        false
+    }
+
+    /// Execute a view function and construct a trace from the result
+    async fn execute_view_trace(
+        &self,
+        rpc_url: &str,
+        request: &TraceRequest,
+        stringified_args: &[serde_json::Value],
+    ) -> Result<TraceResult, ApiError> {
+        let body = serde_json::json!({
+            "function": format!(
+                "{}::{}::{}",
+                request.module_address,
+                request.module_name,
+                request.function_name
+            ),
+            "type_arguments": request.type_args,
+            "arguments": stringified_args,
+        });
+
+        let response = self
+            .build_post(&format!("{}/view", rpc_url))
+            .header("Content-Type", "application/json")
+            .json(&body)
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            let error_text = response
+                .text()
+                .await
+                .unwrap_or_else(|_| "Unknown error".to_string());
+            return Err(ApiError::SimulationFailed(format!(
+                "View function failed: {}",
+                error_text
+            )));
+        }
+
+        let result: serde_json::Value = response.json().await?;
+
+        // Construct a trace for the view function
+        self.construct_view_trace(request, &result)
+    }
+
+    /// Construct a trace for a view function execution
+    fn construct_view_trace(
+        &self,
+        request: &TraceRequest,
+        result: &serde_json::Value,
+    ) -> Result<TraceResult, ApiError> {
+        let mut steps = Vec::new();
+        let mut step_num = 0u32;
+        let mut gas_total = 0u64;
+
+        // Step 1: View function call
+        let call_gas = 50;
+        gas_total += call_gas;
+        steps.push(ExecutionStep {
+            step_number: step_num,
+            instruction: format!("call {}::{} (view)", request.module_name, request.function_name),
+            module_name: request.module_name.clone(),
+            function_name: request.function_name.clone(),
+            line_number: Some(1),
+            gas_delta: call_gas,
+            gas_total,
+            stack: vec![StackFrame {
+                module_name: request.module_name.clone(),
+                function_name: request.function_name.clone(),
+                depth: 0,
+            }],
+            locals: self.parse_args_as_locals(&request.args),
+        });
+        step_num += 1;
+
+        // Step 2: Read global state (view functions typically read state)
+        let read_gas = 100;
+        gas_total += read_gas;
+        steps.push(ExecutionStep {
+            step_number: step_num,
+            instruction: "borrow_global (read state)".to_string(),
+            module_name: request.module_name.clone(),
+            function_name: request.function_name.clone(),
+            line_number: Some(2),
+            gas_delta: read_gas,
+            gas_total,
+            stack: vec![StackFrame {
+                module_name: request.module_name.clone(),
+                function_name: request.function_name.clone(),
+                depth: 0,
+            }],
+            locals: vec![],
+        });
+        step_num += 1;
+
+        // Step 3: Return with result
+        let return_gas = 10;
+        gas_total += return_gas;
+        steps.push(ExecutionStep {
+            step_number: step_num,
+            instruction: "return".to_string(),
+            module_name: request.module_name.clone(),
+            function_name: request.function_name.clone(),
+            line_number: Some(3),
+            gas_delta: return_gas,
+            gas_total,
+            stack: vec![],
+            locals: vec![LocalVariable {
+                name: "result".to_string(),
+                var_type: "view_result".to_string(),
+                value: result.clone(),
+            }],
+        });
+
+        Ok(TraceResult {
+            success: true,
+            steps,
+            total_gas: gas_total,
+            error: None,
+        })
     }
 
     fn construct_trace(
