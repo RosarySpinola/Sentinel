@@ -145,11 +145,99 @@ export function parseVmStatus(vmStatus: string): ParsedError {
     };
   }
 
-  // Unknown error
+  // Check for invalid auth key
+  if (vmStatus.includes("INVALID_AUTH_KEY")) {
+    return {
+      shortCode: "INVALID_AUTH_KEY",
+      title: "Invalid Authentication Key",
+      description: "The sender address does not match the account's authentication key",
+      suggestion:
+        "Make sure the sender address is correct and matches your wallet. The address must be derived from your account's public key.",
+    };
+  }
+
+  // Check for sequence number errors
+  if (vmStatus.includes("SEQUENCE_NUMBER_TOO_OLD")) {
+    return {
+      shortCode: "SEQ_TOO_OLD",
+      title: "Sequence Number Too Old",
+      description: "The transaction sequence number has already been used",
+      suggestion:
+        "Fetch the latest sequence number from the account and retry.",
+    };
+  }
+
+  if (vmStatus.includes("SEQUENCE_NUMBER_TOO_NEW")) {
+    return {
+      shortCode: "SEQ_TOO_NEW",
+      title: "Sequence Number Too New",
+      description: "The transaction sequence number is ahead of the account's current sequence",
+      suggestion:
+        "Wait for pending transactions to complete, or use the correct sequence number.",
+    };
+  }
+
+  // Check for insufficient balance
+  if (vmStatus.includes("INSUFFICIENT_BALANCE") || vmStatus.includes("ECANT_PAY_GAS")) {
+    return {
+      shortCode: "LOW_BALANCE",
+      title: "Insufficient Balance",
+      description: "The account does not have enough balance to pay for gas",
+      suggestion:
+        "Add more MOVE tokens to the sender account to cover gas fees.",
+    };
+  }
+
+  // Check for module not found
+  if (vmStatus.includes("MODULE_NOT_FOUND") || vmStatus.includes("LINKER_ERROR")) {
+    return {
+      shortCode: "MODULE_NOT_FOUND",
+      title: "Module Not Found",
+      description: "The specified module does not exist at the given address",
+      suggestion:
+        "Verify the module address and name are correct. The module may not be deployed on this network.",
+    };
+  }
+
+  // Check for function not found
+  if (vmStatus.includes("FUNCTION_NOT_FOUND")) {
+    return {
+      shortCode: "FUNC_NOT_FOUND",
+      title: "Function Not Found",
+      description: "The specified function does not exist in the module",
+      suggestion:
+        "Check the function name for typos. Make sure the function is public/entry.",
+    };
+  }
+
+  // Check for type argument mismatch
+  if (vmStatus.includes("TYPE_MISMATCH") || vmStatus.includes("NUMBER_OF_TYPE_ARGUMENTS")) {
+    return {
+      shortCode: "TYPE_ERROR",
+      title: "Type Argument Error",
+      description: "The type arguments provided do not match the function signature",
+      suggestion:
+        "Check the number and types of generic type arguments required by the function.",
+    };
+  }
+
+  // Check for argument errors
+  if (vmStatus.includes("NUMBER_OF_ARGUMENTS") || vmStatus.includes("FAILED_TO_DESERIALIZE_ARGUMENT")) {
+    return {
+      shortCode: "ARG_ERROR",
+      title: "Argument Error",
+      description: "The arguments provided do not match the function parameters",
+      suggestion:
+        "Verify the number, order, and types of arguments match the function signature.",
+    };
+  }
+
+  // Unknown error - but make it more informative
   return {
     shortCode: "ERROR",
     title: "Transaction Failed",
     description: vmStatus,
+    suggestion: "Check the raw error message for more details.",
   };
 }
 
