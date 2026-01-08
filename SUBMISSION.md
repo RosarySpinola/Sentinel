@@ -374,23 +374,18 @@ By providing Tenderly-level tooling, we:
 
 ---
 
-## Links & Resources
+## Links
 
 | Resource | Link |
 |----------|------|
-| Live Demo | https://sentinel.move |
-| GitHub | https://github.com/sentinel-move |
-| Documentation | https://docs.sentinel.move |
-| API Reference | https://api.sentinel.move/docs |
-| Demo Video | [YouTube Link] |
+| **Live Demo** | http://sentinel-movement-demo.vercel.app |
+| **GitHub** | https://github.com/RosarySpinola/Sentinel |
 
 ---
 
 ## Team
 
 Built with passion for the Movement ecosystem.
-
-**Contact:** [team@sentinel.move]
 
 ---
 
