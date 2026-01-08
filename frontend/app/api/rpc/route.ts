@@ -92,13 +92,20 @@ export async function GET(request: NextRequest) {
       headers["X-Api-Key"] = shinamiKey;
     }
 
+    const fallbackUrl = `${PUBLIC_URLS[network as keyof typeof PUBLIC_URLS] || PUBLIC_URLS.testnet}/${path}`;
+
     let response: Response;
     try {
       response = await fetch(url, { headers });
+
+      // If Shinami returns auth error, try public endpoint
+      if (shinamiKey && (response.status === 401 || response.status === 403)) {
+        console.warn("Shinami auth failed, falling back to public RPC");
+        response = await fetch(fallbackUrl);
+      }
     } catch (fetchError) {
       // Network error - try fallback to public endpoint if we were using Shinami
       if (shinamiKey) {
-        const fallbackUrl = `${PUBLIC_URLS[network as keyof typeof PUBLIC_URLS] || PUBLIC_URLS.testnet}/${path}`;
         response = await fetch(fallbackUrl);
       } else {
         throw fetchError;

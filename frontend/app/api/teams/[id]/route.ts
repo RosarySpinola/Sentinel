@@ -75,7 +75,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     })),
     invites: (invites || []).map((i) => ({
       id: i.id,
-      email: i.email || "",
+      email: i.invited_by || "",
       role: i.role,
       expiresAt: i.expires_at,
     })),

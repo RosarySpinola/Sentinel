@@ -47,9 +47,15 @@ export function useMoveBalance(
           errorMsg.includes("404") ||
           errorMsg.includes("not found")) {
         setBalance(BigInt(0));
-      } else if (errorMsg.includes("500") || errorMsg.includes("502") || errorMsg.includes("RPC")) {
-        // Network/RPC errors - set balance to 0 but log for debugging
-        console.warn("RPC error fetching MOVE balance, network may be unavailable:", err);
+      } else if (
+        errorMsg.includes("401") ||
+        errorMsg.includes("403") ||
+        errorMsg.includes("500") ||
+        errorMsg.includes("502") ||
+        errorMsg.includes("RPC")
+      ) {
+        // Auth/Network/RPC errors - set balance to 0 but log for debugging
+        console.warn("RPC error fetching MOVE balance:", err);
         setBalance(BigInt(0));
       } else {
         setError(err as Error);
