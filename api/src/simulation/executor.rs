@@ -18,6 +18,24 @@ impl SimulationExecutor {
         }
     }
 
+    /// Build a GET request with Shinami API key header if configured
+    fn build_get(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.get(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
+    /// Build a POST request with Shinami API key header if configured
+    fn build_post(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.post(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
     pub async fn execute(&self, request: SimulationRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
 
@@ -85,8 +103,7 @@ impl SimulationExecutor {
         // Note: We don't use estimate_max_gas_amount=true because Movement returns
         // very low estimates that can fall below minimum gas requirements
         let response = self
-            .http_client
-            .post(format!(
+            .build_post(&format!(
                 "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_prioritized_gas_unit_price=false",
                 rpc_url
             ))
@@ -130,8 +147,7 @@ impl SimulationExecutor {
         });
 
         let response = self
-            .http_client
-            .post(format!("{}/view", rpc_url))
+            .build_post(&format!("{}/view", rpc_url))
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
@@ -274,8 +290,7 @@ impl SimulationExecutor {
 
         let account_url = format!("{}/accounts/{}", rpc_url, address);
 
-        let response = self.http_client
-            .get(&account_url)
+        let response = self.build_get(&account_url)
             .send()
             .await?;
 

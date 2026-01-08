@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { aptos } from "@/lib/aptos";
+import { getAccountResource } from "@/lib/aptos";
 
 interface UseMoveBalanceReturn {
   balance: bigint;
@@ -11,6 +11,10 @@ interface UseMoveBalanceReturn {
   refetch: () => void;
 }
 
+/**
+ * Hook to fetch MOVE token balance using Shinami-backed RPC proxy
+ * Provides better reliability and rate limits than direct RPC calls
+ */
 export function useMoveBalance(
   address: string | null | undefined
 ): UseMoveBalanceReturn {
@@ -28,16 +32,18 @@ export function useMoveBalance(
     setError(null);
 
     try {
-      const resources = await aptos.getAccountResource({
-        accountAddress: address,
-        resourceType: "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>",
-      });
+      // Use the Shinami-backed RPC proxy for reliable balance queries
+      const resources = await getAccountResource(
+        address,
+        "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>"
+      );
 
-      const coinBalance = BigInt((resources as any).coin.value);
+      const coinBalance = BigInt((resources as { coin: { value: string } }).coin.value);
       setBalance(coinBalance);
     } catch (err) {
       // Account might not have MOVE yet
-      if ((err as Error)?.message?.includes("Resource not found")) {
+      if ((err as Error)?.message?.includes("Resource not found") ||
+          (err as Error)?.message?.includes("404")) {
         setBalance(BigInt(0));
       } else {
         setError(err as Error);
