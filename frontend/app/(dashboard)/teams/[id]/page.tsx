@@ -37,6 +37,7 @@ import * as teamsService from "@/lib/services/teams-service";
 import type { Team, TeamMember, TeamInvite, TeamRole } from "@/lib/types/team";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "@/lib/utils/format";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 export default function TeamDetailPage({
   params,
@@ -45,6 +46,7 @@ export default function TeamDetailPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
+  const { walletAddress, isLoaded } = useAuth();
   const [team, setTeam] = useState<
     (Team & { members: TeamMember[]; invites: TeamInvite[] }) | null
   >(null);
@@ -55,16 +57,20 @@ export default function TeamDetailPage({
   const [memberToRemove, setMemberToRemove] = useState<TeamMember | null>(null);
 
   const fetchTeam = useCallback(async () => {
+    if (!walletAddress) {
+      setIsLoading(false);
+      return;
+    }
     try {
       setIsLoading(true);
-      const data = await teamsService.getTeam(id);
+      const data = await teamsService.getTeam(id, walletAddress);
       setTeam(data);
     } catch {
       toast.error("Failed to fetch team");
     } finally {
       setIsLoading(false);
     }
-  }, [id]);
+  }, [id, walletAddress]);
 
   useEffect(() => {
     fetchTeam();
@@ -72,13 +78,13 @@ export default function TeamDetailPage({
 
   const handleInvite = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!inviteEmail.trim()) return;
+    if (!inviteEmail.trim() || !walletAddress) return;
 
     try {
       await teamsService.inviteMember(id, {
         email: inviteEmail.trim(),
         role: inviteRole,
-      });
+      }, walletAddress);
       toast.success("Invitation sent");
       setInviteEmail("");
       fetchTeam();
@@ -88,9 +94,9 @@ export default function TeamDetailPage({
   };
 
   const handleRemoveMember = async () => {
-    if (!memberToRemove) return;
+    if (!memberToRemove || !walletAddress) return;
     try {
-      await teamsService.removeMember(id, memberToRemove.userId);
+      await teamsService.removeMember(id, memberToRemove.userId, walletAddress);
       toast.success("Member removed");
       setMemberToRemove(null);
       fetchTeam();
@@ -100,8 +106,9 @@ export default function TeamDetailPage({
   };
 
   const handleDeleteTeam = async () => {
+    if (!walletAddress) return;
     try {
-      await teamsService.deleteTeam(id);
+      await teamsService.deleteTeam(id, walletAddress);
       toast.success("Team deleted");
       router.push("/teams");
     } catch {
