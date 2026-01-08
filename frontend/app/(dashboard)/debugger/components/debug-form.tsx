@@ -17,12 +17,13 @@ interface DebugFormProps {
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  const [sender, setSender] = useState("");
-  const [moduleAddress, setModuleAddress] = useState("");
-  const [moduleName, setModuleName] = useState("");
-  const [functionName, setFunctionName] = useState("");
-  const [typeArgs, setTypeArgs] = useState("");
-  const [args, setArgs] = useState("");
+  // Demo: Pre-filled with coin::balance view function - works without funds
+  const [sender, setSender] = useState("0x1");
+  const [moduleAddress, setModuleAddress] = useState("0x1");
+  const [moduleName, setModuleName] = useState("coin");
+  const [functionName, setFunctionName] = useState("balance");
+  const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
+  const [args, setArgs] = useState('"0x1"');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
