@@ -38,7 +38,17 @@ export function useMoveBalance(
         "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>"
       );
 
-      const coinBalance = BigInt((resources as { coin: { value: string } }).coin.value);
+      // Safely extract balance with null checks
+      const coinData = resources as { coin?: { value?: string } } | null;
+      const valueStr = coinData?.coin?.value;
+
+      if (!valueStr) {
+        // Resource exists but no coin data - treat as 0 balance
+        setBalance(BigInt(0));
+        return;
+      }
+
+      const coinBalance = BigInt(valueStr);
       setBalance(coinBalance);
     } catch (err) {
       const errorMsg = (err as Error)?.message || "";
