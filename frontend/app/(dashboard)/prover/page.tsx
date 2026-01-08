@@ -40,6 +40,7 @@ const DEFAULT_CODE = `module 0x1::vault {
     /// Spec ensures balance never overflows and is correctly updated
     spec deposit {
         aborts_if vault.balance + amount > MAX_U64;
+        aborts_if vault.total_deposits + 1 > MAX_U64;
         ensures result.balance == vault.balance + amount;
         ensures result.total_deposits == vault.total_deposits + 1;
     }
