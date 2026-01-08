@@ -40,5 +40,6 @@ export interface UseProverReturn {
   isLoading: boolean;
   error: string | null;
   runProver: (code: string, moduleName: string) => Promise<void>;
+  loadDemo: (demoResult: ProverResult) => void;
   clear: () => void;
 }

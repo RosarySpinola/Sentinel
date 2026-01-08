@@ -14,6 +14,7 @@ interface UseDebuggerReturn {
   error: string | null;
   hasSession: boolean;
   loadTrace: (request: TraceRequest) => Promise<void>;
+  loadDemo: (demoTrace: TraceResult) => void;
   stepForward: () => void;
   stepBackward: () => void;
   goToStep: (step: number) => void;
@@ -106,6 +107,12 @@ export function useDebugger(): UseDebuggerReturn {
     setError(null);
   }, []);
 
+  const loadDemo = useCallback((demoTrace: TraceResult) => {
+    setTrace(demoTrace);
+    setCurrentStep(0);
+    setError(null);
+  }, []);
+
   return {
     trace,
     currentStep,
@@ -114,6 +121,7 @@ export function useDebugger(): UseDebuggerReturn {
     error,
     hasSession,
     loadTrace,
+    loadDemo,
     stepForward,
     stepBackward,
     goToStep,
