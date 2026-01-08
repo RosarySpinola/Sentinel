@@ -5,25 +5,27 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bug, Loader2 } from "lucide-react";
-import type { TraceRequest } from "../types";
+import { Bug, Loader2, Play } from "lucide-react";
+import type { TraceRequest, TraceResult } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
+import { DEMO_TRACE } from "../constants";
 
 interface DebugFormProps {
   onSubmit: (request: TraceRequest) => Promise<void>;
+  onLoadDemo: (trace: TraceResult) => void;
   isLoading: boolean;
   error: string | null;
 }
 
-export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
+export function DebugForm({ onSubmit, onLoadDemo, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  // Demo: Pre-filled with coin::balance view function - works without funds
+  // Demo defaults - users typically trace entry functions
   const [sender, setSender] = useState("0x1");
   const [moduleAddress, setModuleAddress] = useState("0x1");
   const [moduleName, setModuleName] = useState("coin");
-  const [functionName, setFunctionName] = useState("balance");
+  const [functionName, setFunctionName] = useState("transfer");
   const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
-  const [args, setArgs] = useState('"0x1"');
+  const [args, setArgs] = useState('"0x456", 1000000');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,16 +121,31 @@ export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
             </div>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading Trace...
-              </>
-            ) : (
-              "Start Debug Session"
-            )}
-          </Button>
+          <div className="flex gap-3">
+            <Button type="submit" className="flex-1" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading Trace...
+                </>
+              ) : (
+                "Start Debug Session"
+              )}
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => onLoadDemo(DEMO_TRACE)}
+              disabled={isLoading}
+            >
+              <Play className="mr-2 h-4 w-4" />
+              Load Demo
+            </Button>
+          </div>
+
+          <p className="text-muted-foreground text-center text-xs">
+            Use &quot;Load Demo&quot; to see a pre-traced MOVE token transfer
+          </p>
         </form>
       </CardContent>
     </Card>

@@ -17,6 +17,7 @@ export default function DebuggerPage() {
     error,
     hasSession,
     loadTrace,
+    loadDemo,
     stepForward,
     stepBackward,
     goToStep,
@@ -33,7 +34,7 @@ export default function DebuggerPage() {
             Step through Move execution with full state visibility
           </p>
         </div>
-        <DebugForm onSubmit={loadTrace} isLoading={isLoading} error={error} />
+        <DebugForm onSubmit={loadTrace} onLoadDemo={loadDemo} isLoading={isLoading} error={error} />
       </div>
     );
   }
