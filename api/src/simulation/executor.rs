@@ -42,7 +42,12 @@ impl SimulationExecutor {
             "arguments": stringified_args,
         });
 
-        // Dummy Ed25519 signature for simulation (all zeros)
+        // For simulation, we need a signature that corresponds to the sender address.
+        // We use a placeholder signature with a public key derived from a known pattern.
+        // The simulation endpoint will skip actual signature verification but still
+        // checks that the auth key matches the sender.
+        //
+        // To work around this, we use query parameters to skip auth key checks.
         let dummy_signature = serde_json::json!({
             "type": "ed25519_signature",
             "public_key": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -60,10 +65,15 @@ impl SimulationExecutor {
             "signature": dummy_signature,
         });
 
-        // Make the simulation request
+        // Make the simulation request with query params to skip auth key validation
+        // estimate_gas_unit_price and estimate_max_gas_amount tell the node this is
+        // a simulation that should skip certain validations
         let response = self
             .http_client
-            .post(format!("{}/transactions/simulate", rpc_url))
+            .post(format!(
+                "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_max_gas_amount=true",
+                rpc_url
+            ))
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
