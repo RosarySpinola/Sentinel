@@ -11,12 +11,23 @@ use super::types::{
 };
 use crate::error::ApiError;
 
+// Use aptos-framework v1.0.0 which is compatible with Move Prover
+// The mainnet branch uses Move 2.2 features not yet supported by the prover
 const MOVE_TOML_TEMPLATE: &str = r#"[package]
 name = "sentinel_verify"
 version = "1.0.0"
 
 [dependencies]
-AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "mainnet" }
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework", rev = "aptos-node-v1.8.0" }
+
+[addresses]
+sentinel_verify = "0x1"
+"#;
+
+// Minimal Move.toml for simple modules that don't need framework dependencies
+const MOVE_TOML_MINIMAL: &str = r#"[package]
+name = "sentinel_verify"
+version = "1.0.0"
 
 [addresses]
 sentinel_verify = "0x1"
@@ -90,8 +101,19 @@ impl ProverExecutor {
         std::fs::create_dir_all(&sources_dir)
             .map_err(|e| ApiError::ProverError(format!("Failed to create sources dir: {}", e)))?;
 
+        // Check if code uses framework imports - if not, use minimal Move.toml
+        let needs_framework = request.move_code.contains("use aptos_framework::")
+            || request.move_code.contains("use std::")
+            || request.move_code.contains("use aptos_std::");
+
+        let move_toml = if needs_framework {
+            MOVE_TOML_TEMPLATE
+        } else {
+            MOVE_TOML_MINIMAL
+        };
+
         // Write Move.toml
-        std::fs::write(base_path.join("Move.toml"), MOVE_TOML_TEMPLATE)
+        std::fs::write(base_path.join("Move.toml"), move_toml)
             .map_err(|e| ApiError::ProverError(format!("Failed to write Move.toml: {}", e)))?;
 
         // Write the Move source file
