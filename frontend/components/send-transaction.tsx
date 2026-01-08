@@ -13,18 +13,18 @@ export function SendTransaction() {
   const [recipient, setRecipient] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  // Movement network configurations
+  // Movement network configurations - consistent with lib/aptos.ts
   const MOVEMENT_CONFIGS = {
     mainnet: {
       chainId: 126,
       name: "Movement Mainnet",
-      fullnode: "https://full.mainnet.movementinfra.xyz/v1",
+      fullnode: "https://mainnet.movementnetwork.xyz/v1",
       explorer: "mainnet",
     },
     testnet: {
       chainId: 250,
       name: "Movement Testnet",
-      fullnode: "https://full.testnet.movementinfra.xyz/v1",
+      fullnode: "https://testnet.movementnetwork.xyz/v1",
       explorer: "testnet",
     },
   };

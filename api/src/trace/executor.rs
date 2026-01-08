@@ -15,6 +15,24 @@ impl TraceExecutor {
         }
     }
 
+    /// Build a GET request with Shinami API key header if configured
+    fn build_get(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.get(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
+    /// Build a POST request with Shinami API key header if configured
+    fn build_post(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.post(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
     pub async fn execute(&self, request: TraceRequest) -> Result<TraceResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
 
@@ -69,8 +87,7 @@ impl TraceExecutor {
 
         // Make the simulation request with query params for gas estimation
         let response = self
-            .http_client
-            .post(format!(
+            .build_post(&format!(
                 "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_prioritized_gas_unit_price=false",
                 rpc_url
             ))
@@ -356,8 +373,7 @@ impl TraceExecutor {
 
         let account_url = format!("{}/accounts/{}", rpc_url, address);
 
-        let response = self.http_client
-            .get(&account_url)
+        let response = self.build_get(&account_url)
             .send()
             .await?;
 

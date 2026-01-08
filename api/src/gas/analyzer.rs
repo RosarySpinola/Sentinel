@@ -22,6 +22,15 @@ impl GasAnalyzer {
         }
     }
 
+    /// Build a POST request with Shinami API key header if configured
+    fn build_post(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.post(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
     pub async fn analyze(&self, request: GasAnalysisRequest) -> Result<GasProfile, ApiError> {
         // 1. Run simulation to get base results
         let sim_result = self.run_simulation(&request).await?;
@@ -80,8 +89,7 @@ impl GasAnalyzer {
         });
 
         let response = self
-            .http_client
-            .post(format!("{}/transactions/simulate", rpc_url))
+            .build_post(&format!("{}/transactions/simulate", rpc_url))
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
