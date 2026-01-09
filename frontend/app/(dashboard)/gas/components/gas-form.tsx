@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -10,6 +9,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Plus, Trash2, Fuel, Wallet } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
+import { useAuth } from "@/lib/hooks/use-auth";
 
 interface GasFormProps {
   onAnalyze: (request: GasAnalysisRequest) => Promise<void>;
@@ -17,7 +17,7 @@ interface GasFormProps {
 }
 
 export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
-  const { account, connected } = useWallet();
+  const { isAuthenticated, walletAddress } = useAuth();
   const { network } = useNetwork();
 
   // Pre-filled with aptos_account::transfer entry function for demo
@@ -33,15 +33,15 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const [args, setArgs] = useState<string[]>(['"0x2"', '"1000000"']);
 
   // Auto-update sender when wallet connects
-  const senderAddress = account?.address?.toString() || formData.sender;
+  const senderAddress = walletAddress || formData.sender;
 
   // Update transfer recipient to a different address when wallet connects
   useEffect(() => {
-    if (account?.address) {
+    if (walletAddress) {
       // Update the first arg (recipient) to be different from sender
       setArgs(['"0x2"', '"1000000"']);
     }
-  }, [account?.address]);
+  }, [walletAddress]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -202,7 +202,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
             ))}
           </div>
 
-          {!connected && (
+          {!isAuthenticated && (
             <Alert>
               <Wallet className="h-4 w-4" />
               <AlertDescription>
@@ -214,7 +214,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || !connected}
+            disabled={isLoading || !isAuthenticated}
           >
             <Fuel className="mr-2 h-4 w-4" />
             {isLoading ? "Analyzing..." : "Analyze Gas"}
