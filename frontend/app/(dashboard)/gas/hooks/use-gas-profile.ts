@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { GasProfile, GasAnalysisRequest } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
@@ -109,6 +109,11 @@ export function useGasProfile(): UseGasProfileReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { apiKey } = useApiKey();
+
+  // Auto-load demo data on mount for hackathon demo
+  useEffect(() => {
+    setProfile(mockGasProfile);
+  }, []);
 
   const analyzeTransaction = useCallback(
     async (request: GasAnalysisRequest) => {
