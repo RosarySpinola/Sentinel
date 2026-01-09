@@ -88,15 +88,21 @@ impl GasAnalyzer {
             "signature": dummy_signature,
         });
 
+        let url = format!("{}/transactions/simulate", rpc_url);
+        tracing::info!("Simulation URL: {}", url);
+        tracing::debug!("Simulation body: {}", serde_json::to_string_pretty(&body).unwrap_or_default());
+
         let response = self
-            .build_post(&format!("{}/transactions/simulate", rpc_url))
+            .build_post(&url)
             .header("Content-Type", "application/json")
             .json(&body)
             .send()
             .await?;
 
         if !response.status().is_success() {
+            let status = response.status();
             let error_text = response.text().await.unwrap_or_else(|_| "Unknown error".to_string());
+            tracing::error!("Simulation failed with status {}: {}", status, error_text);
             return Err(ApiError::SimulationFailed(error_text));
         }
 
