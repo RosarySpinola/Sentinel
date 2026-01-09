@@ -13,7 +13,7 @@ import { SuggestionsList } from "./components/suggestions-list";
 import { GasTimelineChart } from "./components/gas-timeline-chart";
 
 export default function GasPage() {
-  const { profile, isLoading, error, analyzeTransaction, loadDemo, clear } =
+  const { profile, isLoading, error, analyzeTransaction, clear } =
     useGasProfile();
 
   return (
@@ -35,7 +35,6 @@ export default function GasPage() {
 
       <GasForm
         onAnalyze={analyzeTransaction}
-        onLoadDemo={loadDemo}
         isLoading={isLoading}
       />
 

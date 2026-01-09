@@ -6,30 +6,29 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Fuel, Play } from "lucide-react";
+import { Plus, Trash2, Fuel } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
 
 interface GasFormProps {
   onAnalyze: (request: GasAnalysisRequest) => Promise<void>;
-  onLoadDemo: () => void;
   isLoading: boolean;
 }
 
-export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
+export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: Pre-filled with swap::execute - matches demo gas profile data
+  // Pre-filled with coin::balance view function - works without funds
   const [formData, setFormData] = useState({
     sender: "0x1",
-    moduleAddress: "0xdex",
-    moduleName: "swap",
-    functionName: "execute",
+    moduleAddress: "0x1",
+    moduleName: "coin",
+    functionName: "balance",
   });
 
-  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin", "0xdex::usdc::USDC"]);
-  const [args, setArgs] = useState<string[]>(["1000000", "950000"]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
+  const [args, setArgs] = useState<string[]>(['"0x1"']);
 
   const senderAddress = formData.sender || account?.address?.toString() || "";
 
@@ -111,7 +110,7 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
             <div className="space-y-2">
               <Label>Module Name</Label>
               <Input
-                placeholder="aptos_account"
+                placeholder="coin"
                 value={formData.moduleName}
                 onChange={(e) =>
                   setFormData({ ...formData, moduleName: e.target.value })
@@ -122,7 +121,7 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
             <div className="space-y-2">
               <Label>Function Name</Label>
               <Input
-                placeholder="transfer"
+                placeholder="balance"
                 value={formData.functionName}
                 onChange={(e) =>
                   setFormData({ ...formData, functionName: e.target.value })
@@ -192,25 +191,14 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
             ))}
           </div>
 
-          <div className="flex gap-3">
-            <Button
-              type="submit"
-              className="flex-1"
-              disabled={isLoading || !senderAddress}
-            >
-              <Fuel className="mr-2 h-4 w-4" />
-              {isLoading ? "Analyzing..." : "Analyze Gas"}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onLoadDemo}
-              disabled={isLoading}
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Demo
-            </Button>
-          </div>
+          <Button
+            type="submit"
+            className="w-full"
+            disabled={isLoading || !senderAddress}
+          >
+            <Fuel className="mr-2 h-4 w-4" />
+            {isLoading ? "Analyzing..." : "Analyze Gas"}
+          </Button>
         </form>
       </CardContent>
     </Card>
