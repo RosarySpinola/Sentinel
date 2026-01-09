@@ -19,14 +19,32 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
 
 export default function HistoryPage() {
   const router = useRouter();
   const { selectedProject } = useProject();
-  const { simulations, isLoading: simsLoading } = useSimulationHistory();
-  const { proverRuns, isLoading: proverLoading } = useProverRunHistory();
-  const { debuggerRuns, isLoading: debugLoading } = useDebuggerHistory();
-  const { gasAnalyses, isLoading: gasLoading } = useGasAnalysisHistory();
+  const { simulations, isLoading: simsLoading, refetch: refetchSimulations } = useSimulationHistory();
+  const { proverRuns, isLoading: proverLoading, refetch: refetchProver } = useProverRunHistory();
+  const { debuggerRuns, isLoading: debugLoading, refetch: refetchDebugger } = useDebuggerHistory();
+  const { gasAnalyses, isLoading: gasLoading, refetch: refetchGas } = useGasAnalysisHistory();
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchSimulations(),
+        refetchProver(),
+        refetchDebugger(),
+        refetchGas(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const [selectedSimulation, setSelectedSimulation] =
     useState<SimulationHistory | null>(null);
@@ -55,6 +73,15 @@ export default function HistoryPage() {
               : "Showing all history"}
           </p>
         </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+        >
+          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
       </div>
 
       <Tabs defaultValue="simulations" className="space-y-4">

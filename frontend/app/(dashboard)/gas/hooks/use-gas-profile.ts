@@ -4,7 +4,7 @@ import { useState, useCallback } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GasProfile, GasAnalysisRequest } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
-import { saveSimulation } from "@/lib/services/history-service";
+import { saveGasAnalysis } from "@/lib/services/history-service";
 import { useProject } from "@/lib/contexts/project-context";
 
 export interface UseGasProfileReturn {
@@ -68,10 +68,14 @@ export function useGasProfile(): UseGasProfileReturn {
         const gasProfile: GasProfile = await response.json();
         setProfile(gasProfile);
 
-        // Save to history as a gas analysis simulation (only if wallet connected)
+        // Save to history as a gas analysis (only if wallet connected)
         if (account?.address) {
           try {
-            await saveSimulation({
+            // Find top operation and function from breakdown
+            const topOperation = gasProfile.breakdown[0]?.operation || "unknown";
+            const topFunction = gasProfile.breakdown[0]?.function_name || "unknown";
+
+            await saveGasAnalysis({
               walletAddress: account.address.toString(),
               projectId: projectId ?? undefined,
               network: request.network,
@@ -81,9 +85,10 @@ export function useGasProfile(): UseGasProfileReturn {
               functionName: request.functionName,
               typeArguments: request.typeArgs,
               arguments: request.args,
-              success: true,
-              gasUsed: gasProfile.total_gas,
-              vmStatus: "Gas analysis completed",
+              totalGas: gasProfile.total_gas,
+              topOperation,
+              topFunction,
+              suggestionsCount: gasProfile.suggestions?.length || 0,
               result: gasProfile as unknown as Record<string, unknown>,
             });
           } catch (historyErr) {

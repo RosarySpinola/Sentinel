@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import type { TraceRequest, TraceResult, ExecutionStep } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
+import { useProject } from "@/lib/contexts/project-context";
+import { saveDebuggerRun } from "@/lib/services/history-service";
 
 interface UseDebuggerReturn {
   trace: TraceResult | null;
@@ -25,6 +28,8 @@ export function useDebugger(): UseDebuggerReturn {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { apiKey } = useApiKey();
+  const { account } = useWallet();
+  const { selectedProject } = useProject();
 
   const hasSession = trace !== null && trace.steps.length > 0;
   const currentInstruction = trace?.steps[currentStep] ?? null;
@@ -64,6 +69,28 @@ export function useDebugger(): UseDebuggerReturn {
       const data: TraceResult = await response.json();
       setTrace(data);
       setCurrentStep(0);
+
+      // Save to history if wallet is connected
+      if (account?.address) {
+        try {
+          await saveDebuggerRun({
+            walletAddress: account.address,
+            projectId: selectedProject?.id,
+            network: request.network,
+            senderAddress: request.sender,
+            moduleAddress: request.moduleAddress,
+            moduleName: request.moduleName,
+            functionName: request.functionName,
+            typeArguments: request.typeArgs,
+            arguments: request.args,
+            totalSteps: data.steps.length,
+            totalGas: data.total_gas || 0,
+            result: data,
+          });
+        } catch (saveError) {
+          console.error("Failed to save debugger run to history:", saveError);
+        }
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Unknown error";
       setError(message);
@@ -71,7 +98,7 @@ export function useDebugger(): UseDebuggerReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey]);
+  }, [apiKey, account?.address, selectedProject?.id]);
 
   const stepForward = useCallback(() => {
     if (trace && currentStep < trace.steps.length - 1) {
