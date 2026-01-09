@@ -19,16 +19,16 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Pre-filled with coin::balance view function - works without funds
+  // Pre-filled with aptos_account::transfer entry function
   const [formData, setFormData] = useState({
     sender: "0x1",
     moduleAddress: "0x1",
-    moduleName: "coin",
-    functionName: "balance",
+    moduleName: "aptos_account",
+    functionName: "transfer",
   });
 
-  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
-  const [args, setArgs] = useState<string[]>(['"0x1"']);
+  const [typeArgs, setTypeArgs] = useState<string[]>([]);
+  const [args, setArgs] = useState<string[]>(['"0x2"', '"1000000"']);
 
   const senderAddress = formData.sender || account?.address?.toString() || "";
 
