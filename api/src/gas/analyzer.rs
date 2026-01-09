@@ -22,6 +22,15 @@ impl GasAnalyzer {
         }
     }
 
+    /// Build a GET request with Shinami API key header if configured
+    fn build_get(&self, url: &str) -> reqwest::RequestBuilder {
+        let mut req = self.http_client.get(url);
+        if let Some(api_key) = self.config.get_shinami_api_key() {
+            req = req.header("X-Api-Key", api_key);
+        }
+        req
+    }
+
     /// Build a POST request with Shinami API key header if configured
     fn build_post(&self, url: &str) -> reqwest::RequestBuilder {
         let mut req = self.http_client.post(url);
@@ -29,6 +38,30 @@ impl GasAnalyzer {
             req = req.header("X-Api-Key", api_key);
         }
         req
+    }
+
+    /// Get account sequence number for simulation
+    async fn get_account_sequence(&self, rpc_url: &str, address: &str) -> String {
+        let account_url = format!("{}/accounts/{}", rpc_url, address);
+
+        let response = match self.build_get(&account_url).send().await {
+            Ok(r) => r,
+            Err(_) => return "0".to_string(),
+        };
+
+        if !response.status().is_success() {
+            return "0".to_string();
+        }
+
+        let account_info: serde_json::Value = match response.json().await {
+            Ok(v) => v,
+            Err(_) => return "0".to_string(),
+        };
+
+        account_info.get("sequence_number")
+            .and_then(|v| v.as_str())
+            .unwrap_or("0")
+            .to_string()
     }
 
     pub async fn analyze(&self, request: GasAnalysisRequest) -> Result<GasProfile, ApiError> {
@@ -59,6 +92,24 @@ impl GasAnalyzer {
     async fn run_simulation(&self, request: &GasAnalysisRequest) -> Result<SimulationResult, ApiError> {
         let rpc_url = self.config.get_rpc_url(&request.network);
 
+        // Normalize sender address
+        let sender_normalized = if request.sender.starts_with("0x") {
+            request.sender.clone()
+        } else {
+            format!("0x{}", request.sender)
+        };
+
+        // Get sequence number from account
+        let sequence_number = self.get_account_sequence(&rpc_url, &sender_normalized).await;
+
+        // Convert numeric arguments to strings (Movement/Aptos API requires this)
+        let stringified_args: Vec<serde_json::Value> = request.args.iter().map(|arg| {
+            match arg {
+                serde_json::Value::Number(n) => serde_json::Value::String(n.to_string()),
+                other => other.clone(),
+            }
+        }).collect();
+
         let payload = serde_json::json!({
             "type": "entry_function_payload",
             "function": format!(
@@ -68,19 +119,20 @@ impl GasAnalyzer {
                 request.function_name
             ),
             "type_arguments": request.type_args,
-            "arguments": request.args,
+            "arguments": stringified_args,
         });
 
-        // Dummy Ed25519 signature for simulation (all zeros)
+        // Use the sender address as the public key for simulation
+        // With skip_auth_key_validation=true, this should work
         let dummy_signature = serde_json::json!({
             "type": "ed25519_signature",
-            "public_key": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "public_key": sender_normalized,
             "signature": "0x00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
         });
 
         let body = serde_json::json!({
-            "sender": request.sender,
-            "sequence_number": "0",
+            "sender": sender_normalized,
+            "sequence_number": sequence_number,
             "max_gas_amount": request.max_gas.to_string(),
             "gas_unit_price": "100",
             "expiration_timestamp_secs": (chrono::Utc::now().timestamp() + 600).to_string(),
@@ -88,7 +140,11 @@ impl GasAnalyzer {
             "signature": dummy_signature,
         });
 
-        let url = format!("{}/transactions/simulate", rpc_url);
+        // Use skip_auth_key_validation to allow simulation with dummy signature
+        let url = format!(
+            "{}/transactions/simulate?estimate_gas_unit_price=true&estimate_prioritized_gas_unit_price=false&skip_auth_key_validation=true",
+            rpc_url
+        );
         tracing::info!("Simulation URL: {}", url);
         tracing::debug!("Simulation body: {}", serde_json::to_string_pretty(&body).unwrap_or_default());
 

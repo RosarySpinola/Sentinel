@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Fuel } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Trash2, Fuel, Wallet } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
 
@@ -16,12 +17,13 @@ interface GasFormProps {
 }
 
 export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
-  const { account } = useWallet();
+  const { account, connected } = useWallet();
   const { network } = useNetwork();
 
-  // Pre-filled with aptos_account::transfer entry function
+  // Pre-filled with aptos_account::transfer entry function for demo
+  // Uses connected wallet address as sender for valid simulation
   const [formData, setFormData] = useState({
-    sender: "0x1",
+    sender: "", // Will use connected wallet address
     moduleAddress: "0x1",
     moduleName: "aptos_account",
     functionName: "transfer",
@@ -30,7 +32,16 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const [typeArgs, setTypeArgs] = useState<string[]>([]);
   const [args, setArgs] = useState<string[]>(['"0x2"', '"1000000"']);
 
-  const senderAddress = formData.sender || account?.address?.toString() || "";
+  // Auto-update sender when wallet connects
+  const senderAddress = account?.address?.toString() || formData.sender;
+
+  // Update transfer recipient to a different address when wallet connects
+  useEffect(() => {
+    if (account?.address) {
+      // Update the first arg (recipient) to be different from sender
+      setArgs(['"0x2"', '"1000000"']);
+    }
+  }, [account?.address]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -191,10 +202,19 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
             ))}
           </div>
 
+          {!connected && (
+            <Alert>
+              <Wallet className="h-4 w-4" />
+              <AlertDescription>
+                Connect your wallet to analyze gas. Your public key is required for transaction simulation.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || !senderAddress}
+            disabled={isLoading || !connected}
           >
             <Fuel className="mr-2 h-4 w-4" />
             {isLoading ? "Analyzing..." : "Analyze Gas"}

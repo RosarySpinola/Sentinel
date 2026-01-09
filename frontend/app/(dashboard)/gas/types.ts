@@ -17,12 +17,18 @@ export interface OperationGas {
   percentage: number;
 }
 
+export interface Hotspot {
+  line?: number;
+  gas: number;
+  operation: string;
+}
+
 export interface FunctionGas {
-  module: string;
-  function: string;
+  module_name: string;
+  function_name: string;
   gas_used: number;
   percentage: number;
-  calls: number;
+  hotspots: Hotspot[];
 }
 
 export interface SourceLocation {
