@@ -20,11 +20,11 @@ const COLORS = ["#8b5cf6", "#a78bfa", "#c4b5fd", "#ddd6fe", "#ede9fe"];
 
 export function FunctionBreakdown({ functions }: FunctionBreakdownProps) {
   const data = functions.map((fn) => ({
-    name: `${fn.module}::${fn.function}`,
-    shortName: fn.function,
-    gas: fn.gas_used,
-    calls: fn.calls,
-    percentage: fn.percentage,
+    name: `${fn.module_name}::${fn.function_name}`,
+    shortName: fn.function_name || "unknown",
+    gas: fn.gas_used || 0,
+    percentage: fn.percentage || 0,
+    hotspots: fn.hotspots?.length || 0,
   }));
 
   return (
@@ -53,9 +53,11 @@ export function FunctionBreakdown({ functions }: FunctionBreakdownProps) {
                         Gas: {item.gas.toLocaleString()} (
                         {item.percentage.toFixed(1)}%)
                       </div>
-                      <div className="text-muted-foreground text-sm">
-                        Calls: {item.calls}x
-                      </div>
+                      {item.hotspots > 0 && (
+                        <div className="text-muted-foreground text-sm">
+                          Hotspots: {item.hotspots}
+                        </div>
+                      )}
                     </div>
                   );
                 }

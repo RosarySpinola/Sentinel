@@ -59,7 +59,7 @@ export function GasOverview({ profile }: GasOverviewProps) {
         </CardHeader>
         <CardContent>
           <div className="truncate font-mono text-2xl font-bold">
-            {topFunction?.function || "N/A"}
+            {topFunction?.function_name || "N/A"}
           </div>
           <p className="text-muted-foreground mt-1 text-xs">
             {topFunction?.percentage.toFixed(1)}% (
