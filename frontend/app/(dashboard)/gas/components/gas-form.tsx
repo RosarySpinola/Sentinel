@@ -20,15 +20,16 @@ export function GasForm({ onAnalyze, onLoadDemo, isLoading }: GasFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
+  // Demo: Pre-filled with swap::execute - matches demo gas profile data
   const [formData, setFormData] = useState({
-    sender: "",
-    moduleAddress: "0x1",
-    moduleName: "aptos_account",
-    functionName: "transfer",
+    sender: "0x1",
+    moduleAddress: "0xdex",
+    moduleName: "swap",
+    functionName: "execute",
   });
 
-  const [typeArgs, setTypeArgs] = useState<string[]>([]);
-  const [args, setArgs] = useState<string[]>(['"0x2"', "100"]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin", "0xdex::usdc::USDC"]);
+  const [args, setArgs] = useState<string[]>(["1000000", "950000"]);
 
   const senderAddress = formData.sender || account?.address?.toString() || "";
 
