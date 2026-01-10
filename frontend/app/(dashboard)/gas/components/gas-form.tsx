@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, Fuel } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Trash2, Fuel, Info } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
 
@@ -15,20 +17,24 @@ interface GasFormProps {
 }
 
 export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
+  const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: View function (balance check) - works without wallet authentication
-  // View functions don't require auth keys and work for gas estimation
+  // Default to view function (balance check) - works without wallet authentication
+  // When wallet is connected, entry functions also work
   const [formData, setFormData] = useState({
-    sender: "0x1",
+    sender: "", // Will use connected wallet if available
     moduleAddress: "0x1",
     moduleName: "coin",
     functionName: "balance",
   });
 
   const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
-  // Check balance of 0x1 address - view function works without authentication
+  // Check balance of sender address
   const [args, setArgs] = useState<string[]>(['"0x1"']);
+
+  // Auto-fill sender with connected wallet address
+  const senderAddress = formData.sender || account?.address?.toString() || "0x1";
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,7 +49,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
 
     await onAnalyze({
       network,
-      sender: formData.sender,
+      sender: senderAddress,
       moduleAddress: formData.moduleAddress,
       moduleName: formData.moduleName,
       functionName: formData.functionName,
@@ -80,11 +86,21 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
+          {!account && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>
+                Connect your wallet to analyze entry functions (write operations).
+                View functions work without a wallet.
+              </AlertDescription>
+            </Alert>
+          )}
+
           <div className="space-y-2">
             <Label>Sender Address</Label>
             <Input
-              placeholder="0x..."
-              value={formData.sender}
+              placeholder="0x... (auto-filled when wallet connected)"
+              value={senderAddress}
               onChange={(e) =>
                 setFormData({ ...formData, sender: e.target.value })
               }
@@ -192,7 +208,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || !formData.sender}
+            disabled={isLoading || !senderAddress}
           >
             <Fuel className="mr-2 h-4 w-4" />
             {isLoading ? "Analyzing..." : "Analyze Gas"}
