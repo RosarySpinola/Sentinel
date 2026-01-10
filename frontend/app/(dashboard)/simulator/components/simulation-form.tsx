@@ -20,22 +20,22 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: Check if multiple accounts exist on-chain
-  // Shows account validation - useful for airdrop/batch operations
+  // Demo: Query MOVE token balance of core framework account
+  // Shows DeFi-relevant view function with real on-chain data
   const [formData, setFormData] = useState({
     sender: "0x1",
     moduleAddress: "0x1",
-    moduleName: "account",
-    functionName: "exists_at",
+    moduleName: "coin",
+    functionName: "balance",
     maxGas: 100000,
   });
 
   const [isView, setIsView] = useState(true); // View function for reliable demo
 
-  const [typeArgs, setTypeArgs] = useState<string[]>([]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
   const [args, setArgs] = useState<string[]>([
     '"0x1"'
-  ]); // Check if core framework account exists
+  ]); // Query MOVE balance of core framework account
 
   // Auto-fill sender when wallet connects
   const senderAddress = formData.sender || account?.address?.toString() || "";
