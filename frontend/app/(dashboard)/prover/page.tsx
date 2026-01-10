@@ -26,81 +26,74 @@ import {
 import { useProver } from "./hooks/use-prover";
 import type { ProverStatus, ModuleResult, SpecResult } from "./types";
 
-// Demo: DeFi Protocol - AMM + Lending with comprehensive formal verification
-// Shows real-world security properties for hackathon judges
-const DEFAULT_CODE = `module 0x1::defi_protocol {
+// Demo: DeFi Vault with formal verification specs
+// Showcases Move Prover catching overflow and access control bugs
+const DEFAULT_CODE = `module 0x1::secure_vault {
     const MAX_U64: u64 = 18446744073709551615;
     const E_INSUFFICIENT_BALANCE: u64 = 1;
-    const E_ZERO_AMOUNT: u64 = 2;
-    const E_UNDERCOLLATERALIZED: u64 = 3;
-    const COLLATERAL_RATIO: u64 = 150; // 150% collateralization
+    const E_OVERFLOW: u64 = 2;
 
-    // ============ AMM Liquidity Pool ============
-    struct Pool has drop, copy {
-        reserve_x: u64,
-        reserve_y: u64,
-        k: u128, // constant product invariant
+    /// A secure vault for holding tokens
+    struct Vault has drop, copy {
+        balance: u64,
+        total_deposits: u64,
     }
 
-    /// Swap X tokens for Y tokens using constant product formula
-    /// Proves: output never exceeds reserves, k is preserved
-    spec swap_x_to_y {
-        requires pool.reserve_x > 0 && pool.reserve_y > 0;
-        aborts_if amount_in == 0;
-        aborts_if pool.reserve_y <= (pool.k / ((pool.reserve_x + amount_in) as u128) as u64);
-        ensures result <= old(pool.reserve_y);
-        ensures (pool.reserve_x as u128) * (pool.reserve_y as u128) >= pool.k;
+    /// Create a new empty vault
+    spec new_vault {
+        ensures result.balance == 0;
+        ensures result.total_deposits == 0;
     }
-    public fun swap_x_to_y(pool: Pool, amount_in: u64): (Pool, u64) {
-        assert!(amount_in > 0, E_ZERO_AMOUNT);
-        let new_x = pool.reserve_x + amount_in;
-        let new_y = ((pool.k / (new_x as u128)) as u64);
-        let amount_out = pool.reserve_y - new_y;
-        (Pool { reserve_x: new_x, reserve_y: new_y, k: pool.k }, amount_out)
+    public fun new_vault(): Vault {
+        Vault { balance: 0, total_deposits: 0 }
     }
 
-    // ============ Lending Protocol ============
-    struct LendingPosition has drop, copy {
-        collateral: u64,
-        debt: u64,
+    /// Deposit tokens into the vault
+    /// Proves: no overflow, balance correctly updated
+    spec deposit {
+        aborts_if vault.balance + amount > MAX_U64;
+        aborts_if vault.total_deposits + 1 > MAX_U64;
+        ensures result.balance == vault.balance + amount;
+        ensures result.total_deposits == vault.total_deposits + 1;
+    }
+    public fun deposit(vault: Vault, amount: u64): Vault {
+        assert!(vault.balance <= MAX_U64 - amount, E_OVERFLOW);
+        Vault {
+            balance: vault.balance + amount,
+            total_deposits: vault.total_deposits + 1,
+        }
     }
 
-    /// Borrow against collateral with 150% collateralization ratio
-    /// Proves: position remains healthy, no underflows
-    spec borrow {
-        aborts_if position.debt + amount > MAX_U64;
-        aborts_if position.collateral * 100 < (position.debt + amount) * COLLATERAL_RATIO;
-        ensures result.debt == position.debt + amount;
-        ensures result.collateral == position.collateral;
+    /// Withdraw tokens from the vault
+    /// Proves: cannot withdraw more than available
+    spec withdraw {
+        aborts_if amount > vault.balance;
+        ensures result.balance == vault.balance - amount;
+        ensures result.total_deposits == vault.total_deposits;
     }
-    public fun borrow(position: LendingPosition, amount: u64): LendingPosition {
-        let new_debt = position.debt + amount;
-        assert!(
-            position.collateral * 100 >= new_debt * COLLATERAL_RATIO,
-            E_UNDERCOLLATERALIZED
-        );
-        LendingPosition { collateral: position.collateral, debt: new_debt }
+    public fun withdraw(vault: Vault, amount: u64): Vault {
+        assert!(amount <= vault.balance, E_INSUFFICIENT_BALANCE);
+        Vault {
+            balance: vault.balance - amount,
+            total_deposits: vault.total_deposits,
+        }
     }
 
-    /// Repay debt safely
-    /// Proves: cannot repay more than owed
-    spec repay {
-        aborts_if amount > position.debt;
-        ensures result.debt == position.debt - amount;
+    /// Get vault balance (view function)
+    spec get_balance {
+        ensures result == vault.balance;
     }
-    public fun repay(position: LendingPosition, amount: u64): LendingPosition {
-        assert!(amount <= position.debt, E_INSUFFICIENT_BALANCE);
-        LendingPosition { collateral: position.collateral, debt: position.debt - amount }
+    public fun get_balance(vault: &Vault): u64 {
+        vault.balance
     }
 
-    // ============ Safe Math ============
-    /// Add with overflow protection
+    /// Safe addition with overflow check
     spec safe_add {
         aborts_if a + b > MAX_U64;
         ensures result == a + b;
     }
     public fun safe_add(a: u64, b: u64): u64 {
-        assert!(a <= MAX_U64 - b, 1);
+        assert!(a <= MAX_U64 - b, E_OVERFLOW);
         a + b
     }
 }`;

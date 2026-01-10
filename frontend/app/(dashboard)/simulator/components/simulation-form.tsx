@@ -20,22 +20,21 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: Batch transfer to multiple recipients - shows vectors, multi-state changes
+  // Demo: Check multiple account balances - view function that works without wallet
   const [formData, setFormData] = useState({
     sender: "0x1",
     moduleAddress: "0x1",
-    moduleName: "aptos_account",
-    functionName: "batch_transfer",
-    maxGas: 500000,
+    moduleName: "coin",
+    functionName: "balance",
+    maxGas: 100000,
   });
 
-  const [isView, setIsView] = useState(false); // Entry function for impressive demo
+  const [isView, setIsView] = useState(true); // View function for reliable demo
 
-  const [typeArgs, setTypeArgs] = useState<string[]>([]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
   const [args, setArgs] = useState<string[]>([
-    '["0x2", "0x3", "0x4", "0x5"]',
-    '[100000000, 200000000, 300000000, 400000000]'
-  ]); // Batch transfer: 4 recipients with 1-4 MOVE each
+    '"0x1"'
+  ]); // Check system account balance
 
   // Auto-fill sender when wallet connects
   const senderAddress = formData.sender || account?.address?.toString() || "";

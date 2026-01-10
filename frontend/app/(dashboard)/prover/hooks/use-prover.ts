@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import type { ProverResult, UseProverReturn } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
-
 export function useProver(): UseProverReturn {
   const [result, setResult] = useState<ProverResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +21,7 @@ export function useProver(): UseProverReturn {
     setResult(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/prove`, {
+      const response = await fetch("/api/prove", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

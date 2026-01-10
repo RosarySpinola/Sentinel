@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import type { TraceRequest, TraceResult, ExecutionStep } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
-
 interface UseDebuggerReturn {
   trace: TraceResult | null;
   currentStep: number;
@@ -41,7 +39,7 @@ export function useDebugger(): UseDebuggerReturn {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/trace`, {
+      const response = await fetch("/api/trace", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
