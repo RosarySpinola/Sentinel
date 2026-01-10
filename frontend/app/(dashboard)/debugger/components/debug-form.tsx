@@ -17,14 +17,14 @@ interface DebugFormProps {
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  // Demo: Step through MOVE token balance lookup
-  // Shows resource access, type parameters, and state inspection
+  // Demo: Debug MOVE token transfer - shows full execution trace
+  // Impressive: multiple steps, state mutations, coin operations
   const [sender, setSender] = useState("0x1");
   const [moduleAddress, setModuleAddress] = useState("0x1");
   const [moduleName, setModuleName] = useState("coin");
-  const [functionName, setFunctionName] = useState("balance");
+  const [functionName, setFunctionName] = useState("transfer");
   const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
-  const [args, setArgs] = useState('"0x1"'); // Debug balance lookup for core account
+  const [args, setArgs] = useState('"0x2", "100000000"'); // Transfer 1 MOVE, debug full trace
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
