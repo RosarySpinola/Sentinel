@@ -1,15 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Plus, Trash2, Fuel, Wallet } from "lucide-react";
+import { Plus, Trash2, Fuel } from "lucide-react";
 import { GasAnalysisRequest } from "../types";
 import { useNetwork } from "@/lib/contexts/network-context";
-import { useAuth } from "@/lib/hooks/use-auth";
 
 interface GasFormProps {
   onAnalyze: (request: GasAnalysisRequest) => Promise<void>;
@@ -17,38 +15,20 @@ interface GasFormProps {
 }
 
 export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
-  const { isAuthenticated, walletAddress } = useAuth();
   const { network } = useNetwork();
 
-  // Demo: Large batch transfer - impressive gas profiling across 10 recipients
-  // Shows O(n) gas scaling, vector processing, and real DeFi airdrop use case
+  // Demo: View function (balance check) - works without wallet authentication
+  // View functions don't require auth keys and work for gas estimation
   const [formData, setFormData] = useState({
-    sender: "", // Will use connected wallet address
+    sender: "0x1",
     moduleAddress: "0x1",
-    moduleName: "aptos_account",
-    functionName: "batch_transfer",
+    moduleName: "coin",
+    functionName: "balance",
   });
 
-  const [typeArgs, setTypeArgs] = useState<string[]>([]);
-  // 10 recipients with varying amounts - simulates airdrop or payroll distribution
-  const [args, setArgs] = useState<string[]>([
-    '["0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb"]',
-    '["50000000", "75000000", "100000000", "125000000", "150000000", "175000000", "200000000", "225000000", "250000000", "500000000"]'
-  ]); // 10 recipients: 0.5 to 5 MOVE each (total: 18.5 MOVE)
-
-  // Auto-update sender when wallet connects
-  const senderAddress = walletAddress || formData.sender;
-
-  // Keep batch_transfer args when wallet connects
-  useEffect(() => {
-    if (walletAddress) {
-      // Batch transfer to 10 recipients with varying amounts (simulates airdrop)
-      setArgs([
-        '["0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb"]',
-        '["50000000", "75000000", "100000000", "125000000", "150000000", "175000000", "200000000", "225000000", "250000000", "500000000"]'
-      ]);
-    }
-  }, [walletAddress]);
+  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
+  // Check balance of 0x1 address - view function works without authentication
+  const [args, setArgs] = useState<string[]>(['"0x1"']);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,7 +43,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
 
     await onAnalyze({
       network,
-      sender: senderAddress,
+      sender: formData.sender,
       moduleAddress: formData.moduleAddress,
       moduleName: formData.moduleName,
       functionName: formData.functionName,
@@ -104,7 +84,7 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
             <Label>Sender Address</Label>
             <Input
               placeholder="0x..."
-              value={senderAddress}
+              value={formData.sender}
               onChange={(e) =>
                 setFormData({ ...formData, sender: e.target.value })
               }
@@ -209,19 +189,10 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
             ))}
           </div>
 
-          {!isAuthenticated && (
-            <Alert>
-              <Wallet className="h-4 w-4" />
-              <AlertDescription>
-                Connect your wallet to analyze gas. Your public key is required for transaction simulation.
-              </AlertDescription>
-            </Alert>
-          )}
-
           <Button
             type="submit"
             className="w-full"
-            disabled={isLoading || !isAuthenticated}
+            disabled={isLoading || !formData.sender}
           >
             <Fuel className="mr-2 h-4 w-4" />
             {isLoading ? "Analyzing..." : "Analyze Gas"}
