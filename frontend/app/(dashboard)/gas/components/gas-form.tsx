@@ -20,8 +20,8 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const { isAuthenticated, walletAddress } = useAuth();
   const { network } = useNetwork();
 
-  // Demo: Batch transfer - shows gas scaling across multiple operations
-  // Impressive for judges: vectors, multiple state changes, real DeFi use case
+  // Demo: Large batch transfer - impressive gas profiling across 10 recipients
+  // Shows O(n) gas scaling, vector processing, and real DeFi airdrop use case
   const [formData, setFormData] = useState({
     sender: "", // Will use connected wallet address
     moduleAddress: "0x1",
@@ -30,10 +30,11 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   });
 
   const [typeArgs, setTypeArgs] = useState<string[]>([]);
+  // 10 recipients with varying amounts - simulates airdrop or payroll distribution
   const [args, setArgs] = useState<string[]>([
-    '["0x2", "0x3", "0x4", "0x5", "0x6"]',
-    '["100000000", "150000000", "200000000", "250000000", "300000000"]'
-  ]); // 5 recipients: 1, 1.5, 2, 2.5, 3 MOVE each (amounts as strings)
+    '["0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb"]',
+    '["50000000", "75000000", "100000000", "125000000", "150000000", "175000000", "200000000", "225000000", "250000000", "500000000"]'
+  ]); // 10 recipients: 0.5 to 5 MOVE each (total: 18.5 MOVE)
 
   // Auto-update sender when wallet connects
   const senderAddress = walletAddress || formData.sender;
@@ -41,10 +42,10 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   // Keep batch_transfer args when wallet connects
   useEffect(() => {
     if (walletAddress) {
-      // Batch transfer to 5 recipients with varying amounts (as strings)
+      // Batch transfer to 10 recipients with varying amounts (simulates airdrop)
       setArgs([
-        '["0x2", "0x3", "0x4", "0x5", "0x6"]',
-        '["100000000", "150000000", "200000000", "250000000", "300000000"]'
+        '["0x2", "0x3", "0x4", "0x5", "0x6", "0x7", "0x8", "0x9", "0xa", "0xb"]',
+        '["50000000", "75000000", "100000000", "125000000", "150000000", "175000000", "200000000", "225000000", "250000000", "500000000"]'
       ]);
     }
   }, [walletAddress]);

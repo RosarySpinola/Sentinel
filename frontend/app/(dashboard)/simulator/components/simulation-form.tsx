@@ -20,21 +20,22 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: Check multiple account balances - view function that works without wallet
+  // Demo: Check if multiple accounts exist on-chain
+  // Shows account validation - useful for airdrop/batch operations
   const [formData, setFormData] = useState({
     sender: "0x1",
     moduleAddress: "0x1",
-    moduleName: "coin",
-    functionName: "balance",
+    moduleName: "account",
+    functionName: "exists_at",
     maxGas: 100000,
   });
 
   const [isView, setIsView] = useState(true); // View function for reliable demo
 
-  const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
+  const [typeArgs, setTypeArgs] = useState<string[]>([]);
   const [args, setArgs] = useState<string[]>([
     '"0x1"'
-  ]); // Check system account balance
+  ]); // Check if core framework account exists
 
   // Auto-fill sender when wallet connects
   const senderAddress = formData.sender || account?.address?.toString() || "";
