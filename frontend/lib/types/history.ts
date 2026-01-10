@@ -1,13 +1,19 @@
 export interface SimulationHistory {
   id: string;
   projectId?: string;
-  sender: string;
+  network: string;
+  senderAddress: string;
   moduleAddress: string;
   moduleName: string;
   functionName: string;
+  typeArguments?: string[];
+  arguments?: unknown[];
   success: boolean;
   gasUsed: number;
-  network: string;
+  vmStatus?: string;
+  stateChanges?: unknown[];
+  events?: unknown[];
+  errorMessage?: string;
   createdAt: string;
   result?: Record<string, unknown>;
 }
