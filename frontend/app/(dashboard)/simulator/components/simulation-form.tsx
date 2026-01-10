@@ -20,22 +20,23 @@ export function SimulationForm({ onSimulate, isLoading }: SimulationFormProps) {
   const { account } = useWallet();
   const { network } = useNetwork();
 
-  // Demo: Query MOVE token balance of core framework account
-  // Shows DeFi-relevant view function with real on-chain data
+  // Demo: Simulate MOVE token transfer - shows state changes, events, gas
+  // Impressive: actual DeFi operation with balance updates and coin events
   const [formData, setFormData] = useState({
-    sender: "0x1",
+    sender: "", // Will use connected wallet
     moduleAddress: "0x1",
     moduleName: "coin",
-    functionName: "balance",
+    functionName: "transfer",
     maxGas: 100000,
   });
 
-  const [isView, setIsView] = useState(true); // View function for reliable demo
+  const [isView, setIsView] = useState(false); // Entry function for impressive demo
 
   const [typeArgs, setTypeArgs] = useState<string[]>(["0x1::aptos_coin::AptosCoin"]);
   const [args, setArgs] = useState<string[]>([
-    '"0x1"'
-  ]); // Query MOVE balance of core framework account
+    '"0x2"',
+    '"100000000"'
+  ]); // Transfer 1 MOVE to address 0x2
 
   // Auto-fill sender when wallet connects
   const senderAddress = formData.sender || account?.address?.toString() || "";
