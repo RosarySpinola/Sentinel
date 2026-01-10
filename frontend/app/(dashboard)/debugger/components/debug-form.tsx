@@ -17,14 +17,14 @@ interface DebugFormProps {
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  // Demo: Get authentication key - shows cryptographic key inspection
-  // Impressive: demonstrates account security model and key derivation
+  // Demo: Step through MOVE token balance lookup
+  // Shows resource access, type parameters, and state inspection
   const [sender, setSender] = useState("0x1");
   const [moduleAddress, setModuleAddress] = useState("0x1");
-  const [moduleName, setModuleName] = useState("account");
-  const [functionName, setFunctionName] = useState("get_authentication_key");
-  const [typeArgs, setTypeArgs] = useState("");
-  const [args, setArgs] = useState('"0x1"'); // Get auth key for system account
+  const [moduleName, setModuleName] = useState("coin");
+  const [functionName, setFunctionName] = useState("balance");
+  const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
+  const [args, setArgs] = useState('"0x1"'); // Debug balance lookup for core account
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
