@@ -493,7 +493,7 @@ procedure $1_function_info_is_identifier(s: Vec int) returns (res: bool);
 // Uninterpreted function for all types
 
 
-function $Arbitrary_value_of'$1_vault_Vault'(): $1_vault_Vault;
+function $Arbitrary_value_of'$1_secure_vault_Vault'(): $1_secure_vault_Vault;
 
 
 
@@ -3917,242 +3917,415 @@ datatype $TypeParamInfo {
 // Given Types for Type Parameters
 
 
-// struct vault::Vault at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:4:5+86
-datatype $1_vault_Vault {
-    $1_vault_Vault($balance: int, $total_deposits: int)
+// struct secure_vault::Vault at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:7:5+86
+datatype $1_secure_vault_Vault {
+    $1_secure_vault_Vault($balance: int, $total_deposits: int)
 }
-function {:inline} $Update'$1_vault_Vault'_balance(s: $1_vault_Vault, x: int): $1_vault_Vault {
-    $1_vault_Vault(x, s->$total_deposits)
+function {:inline} $Update'$1_secure_vault_Vault'_balance(s: $1_secure_vault_Vault, x: int): $1_secure_vault_Vault {
+    $1_secure_vault_Vault(x, s->$total_deposits)
 }
-function {:inline} $Update'$1_vault_Vault'_total_deposits(s: $1_vault_Vault, x: int): $1_vault_Vault {
-    $1_vault_Vault(s->$balance, x)
+function {:inline} $Update'$1_secure_vault_Vault'_total_deposits(s: $1_secure_vault_Vault, x: int): $1_secure_vault_Vault {
+    $1_secure_vault_Vault(s->$balance, x)
 }
-function $IsValid'$1_vault_Vault'(s: $1_vault_Vault): bool {
+function $IsValid'$1_secure_vault_Vault'(s: $1_secure_vault_Vault): bool {
     $IsValid'u64'(s->$balance)
       && $IsValid'u64'(s->$total_deposits)
 }
-function {:inline} $IsEqual'$1_vault_Vault'(s1: $1_vault_Vault, s2: $1_vault_Vault): bool {
+function {:inline} $IsEqual'$1_secure_vault_Vault'(s1: $1_secure_vault_Vault, s2: $1_secure_vault_Vault): bool {
     s1 == s2
 }
 
-// fun vault::calc_swap_output [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+229
-procedure {:timeLimit 40} $1_vault_calc_swap_output$verify(_$t0: int, _$t1: int, _$t2: int) returns ($ret0: int)
+// fun secure_vault::deposit [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:5+249
+procedure {:timeLimit 40} $1_secure_vault_deposit$verify(_$t0: $1_secure_vault_Vault, _$t1: int) returns ($ret0: $1_secure_vault_Vault)
 {
     // declare local variables
+    var $t2: int;
     var $t3: int;
     var $t4: int;
     var $t5: int;
-    var $t6: int;
-    var $t0: int;
+    var $t6: bool;
+    var $t7: int;
+    var $t8: int;
+    var $t9: int;
+    var $t10: int;
+    var $t11: int;
+    var $t12: $1_secure_vault_Vault;
+    var $t13: int;
+    var $t0: $1_secure_vault_Vault;
     var $t1: int;
-    var $t2: int;
+    var $temp_0'$1_secure_vault_Vault': $1_secure_vault_Vault;
     var $temp_0'u64': int;
     $t0 := _$t0;
     $t1 := _$t1;
-    $t2 := _$t2;
 
     // verification entrypoint assumptions
     call $InitVerification();
 
     // bytecode translation starts here
-    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
-    assume {:print "$at(2,1456,1457)"} true;
-    assume $IsValid'u64'($t0);
+    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:5+1
+    assume {:print "$at(2,868,869)"} true;
+    assume $IsValid'$1_secure_vault_Vault'($t0);
 
-    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
+    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:5+1
     assume $IsValid'u64'($t1);
 
-    // assume WellFormed($t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
-    assume $IsValid'u64'($t2);
-
-    // assume And(Gt($t1, 0), Gt($t2, 0)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:41:9+43
-    assume {:print "$at(2,1363,1406)"} true;
-    assume (($t1 > 0) && ($t2 > 0));
-
-    // trace_local[amount_in]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
-    assume {:print "$at(2,1456,1457)"} true;
+    // trace_local[vault]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:5+1
     assume {:print "$track_local(0,0,0):", $t0} $t0 == $t0;
 
-    // trace_local[reserve_in]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
+    // trace_local[amount]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:5+1
     assume {:print "$track_local(0,0,1):", $t1} $t1 == $t1;
 
-    // trace_local[reserve_out]($t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:44:5+1
-    assume {:print "$track_local(0,0,2):", $t2} $t2 == $t2;
+    // $t2 := get_field<0x1::secure_vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:17+13
+    assume {:print "$at(2,939,952)"} true;
+    $t2 := $t0->$balance;
 
-    // $t3 := *($t0, $t2) on_abort goto L2 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:50:9+25
-    assume {:print "$at(2,1627,1652)"} true;
-    call $t3 := $MulU64($t0, $t2);
+    // $t3 := 18446744073709551615 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:34+7
+    $t3 := 18446744073709551615;
+    assume $IsValid'u64'($t3);
+
+    // $t4 := -($t3, $t1) on_abort goto L3 with $t5 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:34+16
+    call $t4 := $Sub($t3, $t1);
     if ($abort_flag) {
-        assume {:print "$at(2,1627,1652)"} true;
-        $t4 := $abort_code;
-        assume {:print "$track_abort(0,0):", $t4} $t4 == $t4;
-        goto L2;
+        assume {:print "$at(2,956,972)"} true;
+        $t5 := $abort_code;
+        assume {:print "$track_abort(0,0):", $t5} $t5 == $t5;
+        goto L3;
     }
 
-    // $t5 := +($t1, $t0) on_abort goto L2 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:50:37+24
-    call $t5 := $AddU64($t1, $t0);
-    if ($abort_flag) {
-        assume {:print "$at(2,1655,1679)"} true;
-        $t4 := $abort_code;
-        assume {:print "$track_abort(0,0):", $t4} $t4 == $t4;
-        goto L2;
-    }
+    // $t6 := <=($t2, $t4) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:17+33
+    call $t6 := $Le($t2, $t4);
 
-    // $t6 := /($t3, $t5) on_abort goto L2 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:50:9+52
-    call $t6 := $Div($t3, $t5);
-    if ($abort_flag) {
-        assume {:print "$at(2,1627,1679)"} true;
-        $t4 := $abort_code;
-        assume {:print "$track_abort(0,0):", $t4} $t4 == $t4;
-        goto L2;
-    }
+    // if ($t6) goto L1 else goto L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:9+6
+    if ($t6) { goto L1; } else { goto L0; }
 
-    // trace_return[0]($t6) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:50:9+52
-    assume {:print "$track_return(0,0,0):", $t6} $t6 == $t6;
-
-    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:51:5+1
-    assume {:print "$at(2,1684,1685)"} true;
+    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:32:22+5
+    assume {:print "$at(2,1024,1029)"} true;
 L1:
 
-    // assert Le($t6, $t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:42:9+30
-    assume {:print "$at(2,1415,1445)"} true;
-    assert {:msg "assert_failed(2,1415,1445): post-condition does not hold"}
-      ($t6 <= $t2);
+    // $t7 := get_field<0x1::secure_vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:32:22+13
+    assume {:print "$at(2,1024,1037)"} true;
+    $t7 := $t0->$balance;
 
-    // return $t6 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:42:9+30
+    // $t8 := +($t7, $t1) on_abort goto L3 with $t5 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:32:22+22
+    call $t8 := $AddU64($t7, $t1);
+    if ($abort_flag) {
+        assume {:print "$at(2,1024,1046)"} true;
+        $t5 := $abort_code;
+        assume {:print "$track_abort(0,0):", $t5} $t5 == $t5;
+        goto L3;
+    }
+
+    // $t9 := get_field<0x1::secure_vault::Vault>.total_deposits($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:33:29+20
+    assume {:print "$at(2,1076,1096)"} true;
+    $t9 := $t0->$total_deposits;
+
+    // $t10 := 1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:33:52+1
+    $t10 := 1;
+    assume $IsValid'u64'($t10);
+
+    // $t11 := +($t9, $t10) on_abort goto L3 with $t5 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:33:29+24
+    call $t11 := $AddU64($t9, $t10);
+    if ($abort_flag) {
+        assume {:print "$at(2,1076,1100)"} true;
+        $t5 := $abort_code;
+        assume {:print "$track_abort(0,0):", $t5} $t5 == $t5;
+        goto L3;
+    }
+
+    // $t12 := pack 0x1::secure_vault::Vault($t8, $t11) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:31:9+116
+    assume {:print "$at(2,995,1111)"} true;
+    $t12 := $1_secure_vault_Vault($t8, $t11);
+
+    // trace_return[0]($t12) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:58+196
+    assume {:print "$at(2,921,1117)"} true;
+    assume {:print "$track_return(0,0,0):", $t12} $t12 == $t12;
+
+    // goto L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:29:58+196
+    goto L2;
+
+    // label L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:52+10
+    assume {:print "$at(2,974,984)"} true;
+L0:
+
+    // $t13 := 2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:52+10
+    assume {:print "$at(2,974,984)"} true;
+    $t13 := 2;
+    assume $IsValid'u64'($t13);
+
+    // trace_abort($t13) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:9+6
+    assume {:print "$at(2,931,937)"} true;
+    assume {:print "$track_abort(0,0):", $t13} $t13 == $t13;
+
+    // $t5 := move($t13) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:9+6
+    $t5 := $t13;
+
+    // goto L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:30:9+6
+    goto L3;
+
+    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:35:5+1
+    assume {:print "$at(2,1116,1117)"} true;
+L2:
+
+    // assert Not(Gt(Add(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0), $t1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:24:9+43
+    assume {:print "$at(2,635,678)"} true;
+    assert {:msg "assert_failed(2,635,678): function does not abort under this condition"}
+      !(($t0->$balance + $t1) > 18446744073709551615);
+
+    // assert Not(Gt(Add(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t0), 1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:25:9+45
+    assume {:print "$at(2,687,732)"} true;
+    assert {:msg "assert_failed(2,687,732): function does not abort under this condition"}
+      !(($t0->$total_deposits + 1) > 18446744073709551615);
+
+    // assert Eq<u64>(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t12), Add(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0), $t1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:26:9+49
+    assume {:print "$at(2,741,790)"} true;
+    assert {:msg "assert_failed(2,741,790): post-condition does not hold"}
+      $IsEqual'u64'($t12->$balance, ($t0->$balance + $t1));
+
+    // assert Eq<u64>(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t12), Add(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t0), 1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:27:9+58
+    assume {:print "$at(2,799,857)"} true;
+    assert {:msg "assert_failed(2,799,857): post-condition does not hold"}
+      $IsEqual'u64'($t12->$total_deposits, ($t0->$total_deposits + 1));
+
+    // return $t12 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:27:9+58
+    $ret0 := $t12;
+    return;
+
+    // label L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:35:5+1
+    assume {:print "$at(2,1116,1117)"} true;
+L3:
+
+    // assert Or(Gt(Add(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0), $t1), 18446744073709551615), Gt(Add(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t0), 1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:23:5+251
+    assume {:print "$at(2,612,863)"} true;
+    assert {:msg "assert_failed(2,612,863): abort not covered by any of the `aborts_if` clauses"}
+      ((($t0->$balance + $t1) > 18446744073709551615) || (($t0->$total_deposits + 1) > 18446744073709551615));
+
+    // abort($t5) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:23:5+251
+    $abort_code := $t5;
+    $abort_flag := true;
+    return;
+
+}
+
+// fun secure_vault::get_balance [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:56:5+72
+procedure {:timeLimit 40} $1_secure_vault_get_balance$verify(_$t0: $1_secure_vault_Vault) returns ($ret0: int)
+{
+    // declare local variables
+    var $t1: int;
+    var $t0: $1_secure_vault_Vault;
+    var $temp_0'$1_secure_vault_Vault': $1_secure_vault_Vault;
+    var $temp_0'u64': int;
+    $t0 := _$t0;
+
+    // verification entrypoint assumptions
+    call $InitVerification();
+
+    // bytecode translation starts here
+    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:56:5+1
+    assume {:print "$at(2,1769,1770)"} true;
+    assume $IsValid'$1_secure_vault_Vault'($t0);
+
+    // trace_local[vault]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:56:5+1
+    assume {:print "$track_local(0,1,0):", $t0} $t0 == $t0;
+
+    // $t1 := get_field<0x1::secure_vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:57:9+13
+    assume {:print "$at(2,1822,1835)"} true;
+    $t1 := $t0->$balance;
+
+    // trace_return[0]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:57:9+13
+    assume {:print "$track_return(0,1,0):", $t1} $t1 == $t1;
+
+    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:58:5+1
+    assume {:print "$at(2,1840,1841)"} true;
+L1:
+
+    // assert Eq<u64>($t1, select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:54:9+32
+    assume {:print "$at(2,1726,1758)"} true;
+    assert {:msg "assert_failed(2,1726,1758): post-condition does not hold"}
+      $IsEqual'u64'($t1, $t0->$balance);
+
+    // return $t1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:54:9+32
+    $ret0 := $t1;
+    return;
+
+}
+
+// fun secure_vault::new_vault [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:17:5+85
+procedure {:timeLimit 40} $1_secure_vault_new_vault$verify() returns ($ret0: $1_secure_vault_Vault)
+{
+    // declare local variables
+    var $t0: int;
+    var $t1: int;
+    var $t2: $1_secure_vault_Vault;
+    var $temp_0'$1_secure_vault_Vault': $1_secure_vault_Vault;
+
+    // verification entrypoint assumptions
+    call $InitVerification();
+
+    // bytecode translation starts here
+    // $t0 := 0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:18:26+1
+    assume {:print "$at(2,485,486)"} true;
+    $t0 := 0;
+    assume $IsValid'u64'($t0);
+
+    // $t1 := 0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:18:45+1
+    $t1 := 0;
+    assume $IsValid'u64'($t1);
+
+    // $t2 := pack 0x1::secure_vault::Vault($t0, $t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:18:9+39
+    $t2 := $1_secure_vault_Vault($t0, $t1);
+
+    // trace_return[0]($t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:18:9+39
+    assume {:print "$track_return(0,2,0):", $t2} $t2 == $t2;
+
+    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:19:5+1
+    assume {:print "$at(2,512,513)"} true;
+L1:
+
+    // assert Eq<u64>(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t2), 0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:14:9+28
+    assume {:print "$at(2,345,373)"} true;
+    assert {:msg "assert_failed(2,345,373): post-condition does not hold"}
+      $IsEqual'u64'($t2->$balance, 0);
+
+    // assert Eq<u64>(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t2), 0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:15:9+35
+    assume {:print "$at(2,382,417)"} true;
+    assert {:msg "assert_failed(2,382,417): post-condition does not hold"}
+      $IsEqual'u64'($t2->$total_deposits, 0);
+
+    // return $t2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:15:9+35
+    $ret0 := $t2;
+    return;
+
+}
+
+// fun secure_vault::safe_add [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:5+109
+procedure {:timeLimit 40} $1_secure_vault_safe_add$verify(_$t0: int, _$t1: int) returns ($ret0: int)
+{
+    // declare local variables
+    var $t2: int;
+    var $t3: int;
+    var $t4: int;
+    var $t5: bool;
+    var $t6: int;
+    var $t7: int;
+    var $t0: int;
+    var $t1: int;
+    var $temp_0'u64': int;
+    $t0 := _$t0;
+    $t1 := _$t1;
+
+    // verification entrypoint assumptions
+    call $InitVerification();
+
+    // bytecode translation starts here
+    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:5+1
+    assume {:print "$at(2,1983,1984)"} true;
+    assume $IsValid'u64'($t0);
+
+    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:5+1
+    assume $IsValid'u64'($t1);
+
+    // trace_local[a]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:5+1
+    assume {:print "$track_local(0,3,0):", $t0} $t0 == $t0;
+
+    // trace_local[b]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:5+1
+    assume {:print "$track_local(0,3,1):", $t1} $t1 == $t1;
+
+    // $t2 := 18446744073709551615 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:22+7
+    assume {:print "$at(2,2047,2054)"} true;
+    $t2 := 18446744073709551615;
+    assume $IsValid'u64'($t2);
+
+    // $t3 := -($t2, $t1) on_abort goto L3 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:22+11
+    call $t3 := $Sub($t2, $t1);
+    if ($abort_flag) {
+        assume {:print "$at(2,2047,2058)"} true;
+        $t4 := $abort_code;
+        assume {:print "$track_abort(0,3):", $t4} $t4 == $t4;
+        goto L3;
+    }
+
+    // $t5 := <=($t0, $t3) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:17+16
+    call $t5 := $Le($t0, $t3);
+
+    // if ($t5) goto L1 else goto L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:9+6
+    if ($t5) { goto L1; } else { goto L0; }
+
+    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:67:9+1
+    assume {:print "$at(2,2081,2082)"} true;
+L1:
+
+    // $t6 := +($t0, $t1) on_abort goto L3 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:67:9+5
+    assume {:print "$at(2,2081,2086)"} true;
+    call $t6 := $AddU64($t0, $t1);
+    if ($abort_flag) {
+        assume {:print "$at(2,2081,2086)"} true;
+        $t4 := $abort_code;
+        assume {:print "$track_abort(0,3):", $t4} $t4 == $t4;
+        goto L3;
+    }
+
+    // trace_return[0]($t6) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:46+68
+    assume {:print "$at(2,2024,2092)"} true;
+    assume {:print "$track_return(0,3,0):", $t6} $t6 == $t6;
+
+    // goto L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:65:46+68
+    goto L2;
+
+    // label L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:35+10
+    assume {:print "$at(2,2060,2070)"} true;
+L0:
+
+    // $t7 := 2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:35+10
+    assume {:print "$at(2,2060,2070)"} true;
+    $t7 := 2;
+    assume $IsValid'u64'($t7);
+
+    // trace_abort($t7) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:9+6
+    assume {:print "$at(2,2034,2040)"} true;
+    assume {:print "$track_abort(0,3):", $t7} $t7 == $t7;
+
+    // $t4 := move($t7) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:9+6
+    $t4 := $t7;
+
+    // goto L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:66:9+6
+    goto L3;
+
+    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:68:5+1
+    assume {:print "$at(2,2091,2092)"} true;
+L2:
+
+    // assert Not(Gt(Add($t0, $t1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:62:9+26
+    assume {:print "$at(2,1913,1939)"} true;
+    assert {:msg "assert_failed(2,1913,1939): function does not abort under this condition"}
+      !(($t0 + $t1) > 18446744073709551615);
+
+    // assert Eq<u64>($t6, Add($t0, $t1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:63:9+24
+    assume {:print "$at(2,1948,1972)"} true;
+    assert {:msg "assert_failed(2,1948,1972): post-condition does not hold"}
+      $IsEqual'u64'($t6, ($t0 + $t1));
+
+    // return $t6 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:63:9+24
     $ret0 := $t6;
     return;
 
-    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:51:5+1
-    assume {:print "$at(2,1684,1685)"} true;
-L2:
+    // label L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:68:5+1
+    assume {:print "$at(2,2091,2092)"} true;
+L3:
 
-    // abort($t4) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:51:5+1
-    assume {:print "$at(2,1684,1685)"} true;
+    // assert Gt(Add($t0, $t1), 18446744073709551615) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:61:5+89
+    assume {:print "$at(2,1889,1978)"} true;
+    assert {:msg "assert_failed(2,1889,1978): abort not covered by any of the `aborts_if` clauses"}
+      (($t0 + $t1) > 18446744073709551615);
+
+    // abort($t4) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:61:5+89
     $abort_code := $t4;
     $abort_flag := true;
     return;
 
 }
 
-// fun vault::deposit [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:17:5+185
-procedure {:timeLimit 40} $1_vault_deposit$verify(_$t0: $1_vault_Vault, _$t1: int) returns ($ret0: $1_vault_Vault)
-{
-    // declare local variables
-    var $t2: int;
-    var $t3: int;
-    var $t4: int;
-    var $t5: int;
-    var $t6: int;
-    var $t7: int;
-    var $t8: $1_vault_Vault;
-    var $t0: $1_vault_Vault;
-    var $t1: int;
-    var $temp_0'$1_vault_Vault': $1_vault_Vault;
-    var $temp_0'u64': int;
-    $t0 := _$t0;
-    $t1 := _$t1;
-
-    // verification entrypoint assumptions
-    call $InitVerification();
-
-    // bytecode translation starts here
-    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:17:5+1
-    assume {:print "$at(2,592,593)"} true;
-    assume $IsValid'$1_vault_Vault'($t0);
-
-    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:17:5+1
-    assume $IsValid'u64'($t1);
-
-    // trace_local[vault]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:17:5+1
-    assume {:print "$track_local(0,1,0):", $t0} $t0 == $t0;
-
-    // trace_local[amount]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:17:5+1
-    assume {:print "$track_local(0,1,1):", $t1} $t1 == $t1;
-
-    // $t2 := get_field<0x1::vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:19:22+13
-    assume {:print "$at(2,684,697)"} true;
-    $t2 := $t0->$balance;
-
-    // $t3 := +($t2, $t1) on_abort goto L2 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:19:22+22
-    call $t3 := $AddU64($t2, $t1);
-    if ($abort_flag) {
-        assume {:print "$at(2,684,706)"} true;
-        $t4 := $abort_code;
-        assume {:print "$track_abort(0,1):", $t4} $t4 == $t4;
-        goto L2;
-    }
-
-    // $t5 := get_field<0x1::vault::Vault>.total_deposits($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:20:29+20
-    assume {:print "$at(2,736,756)"} true;
-    $t5 := $t0->$total_deposits;
-
-    // $t6 := 1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:20:52+1
-    $t6 := 1;
-    assume $IsValid'u64'($t6);
-
-    // $t7 := +($t5, $t6) on_abort goto L2 with $t4 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:20:29+24
-    call $t7 := $AddU64($t5, $t6);
-    if ($abort_flag) {
-        assume {:print "$at(2,736,760)"} true;
-        $t4 := $abort_code;
-        assume {:print "$track_abort(0,1):", $t4} $t4 == $t4;
-        goto L2;
-    }
-
-    // $t8 := pack 0x1::vault::Vault($t3, $t7) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:18:9+116
-    assume {:print "$at(2,655,771)"} true;
-    $t8 := $1_vault_Vault($t3, $t7);
-
-    // trace_return[0]($t8) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:18:9+116
-    assume {:print "$track_return(0,1,0):", $t8} $t8 == $t8;
-
-    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:22:5+1
-    assume {:print "$at(2,776,777)"} true;
-L1:
-
-    // assert Not(Gt(Add(select vault::Vault.balance<0x1::vault::Vault>($t0), $t1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:12:9+43
-    assume {:print "$at(2,359,402)"} true;
-    assert {:msg "assert_failed(2,359,402): function does not abort under this condition"}
-      !(($t0->$balance + $t1) > 18446744073709551615);
-
-    // assert Not(Gt(Add(select vault::Vault.total_deposits<0x1::vault::Vault>($t0), 1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:13:9+45
-    assume {:print "$at(2,411,456)"} true;
-    assert {:msg "assert_failed(2,411,456): function does not abort under this condition"}
-      !(($t0->$total_deposits + 1) > 18446744073709551615);
-
-    // assert Eq<u64>(select vault::Vault.balance<0x1::vault::Vault>($t8), Add(select vault::Vault.balance<0x1::vault::Vault>($t0), $t1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:14:9+49
-    assume {:print "$at(2,465,514)"} true;
-    assert {:msg "assert_failed(2,465,514): post-condition does not hold"}
-      $IsEqual'u64'($t8->$balance, ($t0->$balance + $t1));
-
-    // assert Eq<u64>(select vault::Vault.total_deposits<0x1::vault::Vault>($t8), Add(select vault::Vault.total_deposits<0x1::vault::Vault>($t0), 1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:15:9+58
-    assume {:print "$at(2,523,581)"} true;
-    assert {:msg "assert_failed(2,523,581): post-condition does not hold"}
-      $IsEqual'u64'($t8->$total_deposits, ($t0->$total_deposits + 1));
-
-    // return $t8 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:15:9+58
-    $ret0 := $t8;
-    return;
-
-    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:22:5+1
-    assume {:print "$at(2,776,777)"} true;
-L2:
-
-    // assert Or(Gt(Add(select vault::Vault.balance<0x1::vault::Vault>($t0), $t1), 18446744073709551615), Gt(Add(select vault::Vault.total_deposits<0x1::vault::Vault>($t0), 1), 18446744073709551615)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:11:5+251
-    assume {:print "$at(2,336,587)"} true;
-    assert {:msg "assert_failed(2,336,587): abort not covered by any of the `aborts_if` clauses"}
-      ((($t0->$balance + $t1) > 18446744073709551615) || (($t0->$total_deposits + 1) > 18446744073709551615));
-
-    // abort($t4) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:11:5+251
-    $abort_code := $t4;
-    $abort_flag := true;
-    return;
-
-}
-
-// fun vault::withdraw [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:5+227
-procedure {:timeLimit 40} $1_vault_withdraw$verify(_$t0: $1_vault_Vault, _$t1: int) returns ($ret0: $1_vault_Vault)
+// fun secure_vault::withdraw [verification] at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:5+248
+procedure {:timeLimit 40} $1_secure_vault_withdraw$verify(_$t0: $1_secure_vault_Vault, _$t1: int) returns ($ret0: $1_secure_vault_Vault)
 {
     // declare local variables
     var $t2: int;
@@ -4161,11 +4334,11 @@ procedure {:timeLimit 40} $1_vault_withdraw$verify(_$t0: $1_vault_Vault, _$t1: i
     var $t5: int;
     var $t6: int;
     var $t7: int;
-    var $t8: $1_vault_Vault;
+    var $t8: $1_secure_vault_Vault;
     var $t9: int;
-    var $t0: $1_vault_Vault;
+    var $t0: $1_secure_vault_Vault;
     var $t1: int;
-    var $temp_0'$1_vault_Vault': $1_vault_Vault;
+    var $temp_0'$1_secure_vault_Vault': $1_secure_vault_Vault;
     var $temp_0'u64': int;
     $t0 := _$t0;
     $t1 := _$t1;
@@ -4174,108 +4347,113 @@ procedure {:timeLimit 40} $1_vault_withdraw$verify(_$t0: $1_vault_Vault, _$t1: i
     call $InitVerification();
 
     // bytecode translation starts here
-    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:5+1
-    assume {:print "$at(2,1008,1009)"} true;
-    assume $IsValid'$1_vault_Vault'($t0);
+    // assume WellFormed($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:5+1
+    assume {:print "$at(2,1403,1404)"} true;
+    assume $IsValid'$1_secure_vault_Vault'($t0);
 
-    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:5+1
+    // assume WellFormed($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:5+1
     assume $IsValid'u64'($t1);
 
-    // trace_local[vault]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:5+1
-    assume {:print "$track_local(0,2,0):", $t0} $t0 == $t0;
+    // trace_local[vault]($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:5+1
+    assume {:print "$track_local(0,4,0):", $t0} $t0 == $t0;
 
-    // trace_local[amount]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:5+1
-    assume {:print "$track_local(0,2,1):", $t1} $t1 == $t1;
+    // trace_local[amount]($t1) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:5+1
+    assume {:print "$track_local(0,4,1):", $t1} $t1 == $t1;
 
-    // $t2 := get_field<0x1::vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:27+13
-    assume {:print "$at(2,1090,1103)"} true;
+    // $t2 := get_field<0x1::secure_vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:27+13
+    assume {:print "$at(2,1485,1498)"} true;
     $t2 := $t0->$balance;
 
-    // $t3 := <=($t1, $t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:17+23
+    // $t3 := <=($t1, $t2) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:17+23
     call $t3 := $Le($t1, $t2);
 
-    // if ($t3) goto L1 else goto L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:9+6
+    // if ($t3) goto L1 else goto L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:9+6
     if ($t3) { goto L1; } else { goto L0; }
 
-    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:33:22+5
-    assume {:print "$at(2,1146,1151)"} true;
+    // label L1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:47:22+5
+    assume {:print "$at(2,1562,1567)"} true;
 L1:
 
-    // $t4 := get_field<0x1::vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:33:22+13
-    assume {:print "$at(2,1146,1159)"} true;
+    // $t4 := get_field<0x1::secure_vault::Vault>.balance($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:47:22+13
+    assume {:print "$at(2,1562,1575)"} true;
     $t4 := $t0->$balance;
 
-    // $t5 := -($t4, $t1) on_abort goto L3 with $t6 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:33:22+22
+    // $t5 := -($t4, $t1) on_abort goto L3 with $t6 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:47:22+22
     call $t5 := $Sub($t4, $t1);
     if ($abort_flag) {
-        assume {:print "$at(2,1146,1168)"} true;
+        assume {:print "$at(2,1562,1584)"} true;
         $t6 := $abort_code;
-        assume {:print "$track_abort(0,2):", $t6} $t6 == $t6;
+        assume {:print "$track_abort(0,4):", $t6} $t6 == $t6;
         goto L3;
     }
 
-    // $t7 := get_field<0x1::vault::Vault>.total_deposits($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:34:29+20
-    assume {:print "$at(2,1198,1218)"} true;
+    // $t7 := get_field<0x1::secure_vault::Vault>.total_deposits($t0) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:48:29+20
+    assume {:print "$at(2,1614,1634)"} true;
     $t7 := $t0->$total_deposits;
 
-    // $t8 := pack 0x1::vault::Vault($t5, $t7) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:32:9+112
-    assume {:print "$at(2,1117,1229)"} true;
-    $t8 := $1_vault_Vault($t5, $t7);
+    // $t8 := pack 0x1::secure_vault::Vault($t5, $t7) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:46:9+112
+    assume {:print "$at(2,1533,1645)"} true;
+    $t8 := $1_secure_vault_Vault($t5, $t7);
 
-    // trace_return[0]($t8) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:59+173
-    assume {:print "$at(2,1062,1235)"} true;
-    assume {:print "$track_return(0,2,0):", $t8} $t8 == $t8;
+    // trace_return[0]($t8) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:59+194
+    assume {:print "$at(2,1457,1651)"} true;
+    assume {:print "$track_return(0,4,0):", $t8} $t8 == $t8;
 
-    // goto L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:30:59+173
+    // goto L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:44:59+194
     goto L2;
 
-    // label L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:42+1
-    assume {:print "$at(2,1105,1106)"} true;
+    // label L0 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:42+22
+    assume {:print "$at(2,1500,1522)"} true;
 L0:
 
-    // $t9 := 1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:42+1
-    assume {:print "$at(2,1105,1106)"} true;
+    // $t9 := 1 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:42+22
+    assume {:print "$at(2,1500,1522)"} true;
     $t9 := 1;
     assume $IsValid'u64'($t9);
 
-    // trace_abort($t9) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:9+6
-    assume {:print "$at(2,1072,1078)"} true;
-    assume {:print "$track_abort(0,2):", $t9} $t9 == $t9;
+    // trace_abort($t9) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:9+6
+    assume {:print "$at(2,1467,1473)"} true;
+    assume {:print "$track_abort(0,4):", $t9} $t9 == $t9;
 
-    // $t6 := move($t9) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:9+6
+    // $t6 := move($t9) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:9+6
     $t6 := $t9;
 
-    // goto L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:31:9+6
+    // goto L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:45:9+6
     goto L3;
 
-    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:36:5+1
-    assume {:print "$at(2,1234,1235)"} true;
+    // label L2 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:50:5+1
+    assume {:print "$at(2,1650,1651)"} true;
 L2:
 
-    // assert Not(Gt($t1, select vault::Vault.balance<0x1::vault::Vault>($t0))) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:27:9+33
-    assume {:print "$at(2,906,939)"} true;
-    assert {:msg "assert_failed(2,906,939): function does not abort under this condition"}
+    // assert Not(Gt($t1, select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0))) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:40:9+33
+    assume {:print "$at(2,1238,1271)"} true;
+    assert {:msg "assert_failed(2,1238,1271): function does not abort under this condition"}
       !($t1 > $t0->$balance);
 
-    // assert Eq<u64>(select vault::Vault.balance<0x1::vault::Vault>($t8), Sub(select vault::Vault.balance<0x1::vault::Vault>($t0), $t1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:28:9+49
-    assume {:print "$at(2,948,997)"} true;
-    assert {:msg "assert_failed(2,948,997): post-condition does not hold"}
+    // assert Eq<u64>(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t8), Sub(select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0), $t1)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:41:9+49
+    assume {:print "$at(2,1280,1329)"} true;
+    assert {:msg "assert_failed(2,1280,1329): post-condition does not hold"}
       $IsEqual'u64'($t8->$balance, ($t0->$balance - $t1));
 
-    // return $t8 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:28:9+49
+    // assert Eq<u64>(select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t8), select secure_vault::Vault.total_deposits<0x1::secure_vault::Vault>($t0)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:42:9+54
+    assume {:print "$at(2,1338,1392)"} true;
+    assert {:msg "assert_failed(2,1338,1392): post-condition does not hold"}
+      $IsEqual'u64'($t8->$total_deposits, $t0->$total_deposits);
+
+    // return $t8 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:42:9+54
     $ret0 := $t8;
     return;
 
-    // label L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:36:5+1
-    assume {:print "$at(2,1234,1235)"} true;
+    // label L3 at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:50:5+1
+    assume {:print "$at(2,1650,1651)"} true;
 L3:
 
-    // assert Gt($t1, select vault::Vault.balance<0x1::vault::Vault>($t0)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:26:5+121
-    assume {:print "$at(2,882,1003)"} true;
-    assert {:msg "assert_failed(2,882,1003): abort not covered by any of the `aborts_if` clauses"}
+    // assert Gt($t1, select secure_vault::Vault.balance<0x1::secure_vault::Vault>($t0)) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:39:5+184
+    assume {:print "$at(2,1214,1398)"} true;
+    assert {:msg "assert_failed(2,1214,1398): abort not covered by any of the `aborts_if` clauses"}
       ($t1 > $t0->$balance);
 
-    // abort($t6) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpS3SPGU/sources/vault.move:26:5+121
+    // abort($t6) at /var/folders/vn/tl96vjs57z9cw273hk8q56hm0000gn/T/.tmpACT19p/sources/secure_vault.move:39:5+184
     $abort_code := $t6;
     $abort_flag := true;
     return;

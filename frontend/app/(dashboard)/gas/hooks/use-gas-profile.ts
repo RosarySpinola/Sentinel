@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import { GasProfile, GasAnalysisRequest } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
-
 export interface UseGasProfileReturn {
   profile: GasProfile | null;
   isLoading: boolean;
@@ -38,8 +36,8 @@ export function useGasProfile(): UseGasProfileReturn {
       setError(null);
 
       try {
-        // Call the backend API which uses skip_auth_key_validation
-        const response = await fetch(`${API_BASE_URL}/api/v1/analyze-gas`, {
+        // Call the Next.js API route which proxies to backend
+        const response = await fetch("/api/analyze-gas", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

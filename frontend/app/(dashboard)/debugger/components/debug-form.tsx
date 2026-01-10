@@ -17,13 +17,13 @@ interface DebugFormProps {
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  // Demo: Power function - shows recursive execution, stack depth, gas per iteration
+  // Demo: Coin balance check - shows execution trace with resource access
   const [sender, setSender] = useState("0x1");
   const [moduleAddress, setModuleAddress] = useState("0x1");
-  const [moduleName, setModuleName] = useState("math64");
-  const [functionName, setFunctionName] = useState("pow");
-  const [typeArgs, setTypeArgs] = useState("");
-  const [args, setArgs] = useState("2, 10"); // 2^10 = 1024, shows 10 iterations
+  const [moduleName, setModuleName] = useState("coin");
+  const [functionName, setFunctionName] = useState("balance");
+  const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
+  const [args, setArgs] = useState('"0x1"'); // Check system account balance
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -32,8 +32,8 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const [typeArgs, setTypeArgs] = useState<string[]>([]);
   const [args, setArgs] = useState<string[]>([
     '["0x2", "0x3", "0x4", "0x5", "0x6"]',
-    '[100000000, 150000000, 200000000, 250000000, 300000000]'
-  ]); // 5 recipients: 1, 1.5, 2, 2.5, 3 MOVE each
+    '["100000000", "150000000", "200000000", "250000000", "300000000"]'
+  ]); // 5 recipients: 1, 1.5, 2, 2.5, 3 MOVE each (amounts as strings)
 
   // Auto-update sender when wallet connects
   const senderAddress = walletAddress || formData.sender;
@@ -41,10 +41,10 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   // Keep batch_transfer args when wallet connects
   useEffect(() => {
     if (walletAddress) {
-      // Batch transfer to 5 recipients with varying amounts
+      // Batch transfer to 5 recipients with varying amounts (as strings)
       setArgs([
         '["0x2", "0x3", "0x4", "0x5", "0x6"]',
-        '[100000000, 150000000, 200000000, 250000000, 300000000]'
+        '["100000000", "150000000", "200000000", "250000000", "300000000"]'
       ]);
     }
   }, [walletAddress]);

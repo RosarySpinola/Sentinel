@@ -4,8 +4,6 @@ import { useState, useCallback } from "react";
 import { SimulationRequest, SimulationResult } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4004";
-
 export function useSimulation() {
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,7 +21,7 @@ export function useSimulation() {
     setResult(null);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/simulate`, {
+      const response = await fetch("/api/simulate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
