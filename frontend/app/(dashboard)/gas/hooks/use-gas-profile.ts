@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { GasProfile, GasAnalysisRequest } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
+import { saveSimulation } from "@/lib/services/history-service";
+import { useProject } from "@/lib/contexts/project-context";
 
 export interface UseGasProfileReturn {
   profile: GasProfile | null;
@@ -13,6 +16,8 @@ export interface UseGasProfileReturn {
 }
 
 export function useGasProfile(): UseGasProfileReturn {
+  const { projectId } = useProject();
+  const { account } = useWallet();
   const [profile, setProfile] = useState<GasProfile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +67,29 @@ export function useGasProfile(): UseGasProfileReturn {
 
         const gasProfile: GasProfile = await response.json();
         setProfile(gasProfile);
+
+        // Save to history as a gas analysis simulation (only if wallet connected)
+        if (account?.address) {
+          try {
+            await saveSimulation({
+              walletAddress: account.address.toString(),
+              projectId: projectId ?? undefined,
+              network: request.network,
+              senderAddress: request.sender,
+              moduleAddress: request.moduleAddress,
+              moduleName: request.moduleName,
+              functionName: request.functionName,
+              typeArguments: request.typeArgs,
+              arguments: request.args,
+              success: true,
+              gasUsed: gasProfile.total_gas,
+              vmStatus: "Gas analysis completed",
+              result: gasProfile as unknown as Record<string, unknown>,
+            });
+          } catch (historyErr) {
+            console.warn("Failed to save to history:", historyErr);
+          }
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : "Gas analysis failed";
         setError(message);
@@ -69,7 +97,7 @@ export function useGasProfile(): UseGasProfileReturn {
         setIsLoading(false);
       }
     },
-    [apiKey]
+    [apiKey, projectId, account?.address]
   );
 
   const clear = useCallback(() => {

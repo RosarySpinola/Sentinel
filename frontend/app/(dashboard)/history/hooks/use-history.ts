@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import type {
   SimulationHistory,
   ProverRunHistory,
@@ -13,19 +14,30 @@ export function useSimulationHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
+  const { account } = useWallet();
   const [simulations, setSimulations] = useState<SimulationHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSimulations = useCallback(async () => {
+    if (!account?.address) {
+      setSimulations([]);
+      setTotal(0);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const data = await historyService.listSimulations({
-        projectId: projectId ?? undefined,
-        ...filters,
-      });
+      const data = await historyService.listSimulations(
+        {
+          projectId: projectId ?? undefined,
+          ...filters,
+        },
+        { walletAddress: account.address.toString() }
+      );
       setSimulations(data.items);
       setTotal(data.total);
     } catch (err) {
@@ -35,7 +47,7 @@ export function useSimulationHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters]);
+  }, [projectId, filters, account?.address]);
 
   useEffect(() => {
     fetchSimulations();
@@ -48,19 +60,30 @@ export function useProverRunHistory(
   filters?: Omit<HistoryFilters, "projectId">
 ) {
   const { projectId } = useProject();
+  const { account } = useWallet();
   const [proverRuns, setProverRuns] = useState<ProverRunHistory[]>([]);
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchProverRuns = useCallback(async () => {
+    if (!account?.address) {
+      setProverRuns([]);
+      setTotal(0);
+      setIsLoading(false);
+      return;
+    }
+
     try {
       setIsLoading(true);
       setError(null);
-      const data = await historyService.listProverRuns({
-        projectId: projectId ?? undefined,
-        ...filters,
-      });
+      const data = await historyService.listProverRuns(
+        {
+          projectId: projectId ?? undefined,
+          ...filters,
+        },
+        { walletAddress: account.address.toString() }
+      );
       setProverRuns(data.items);
       setTotal(data.total);
     } catch (err) {
@@ -70,7 +93,7 @@ export function useProverRunHistory(
     } finally {
       setIsLoading(false);
     }
-  }, [projectId, filters]);
+  }, [projectId, filters, account?.address]);
 
   useEffect(() => {
     fetchProverRuns();

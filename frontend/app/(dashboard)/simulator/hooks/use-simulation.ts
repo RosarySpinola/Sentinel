@@ -1,10 +1,15 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { SimulationRequest, SimulationResult } from "../types";
 import { useApiKey } from "@/lib/contexts/api-key-context";
+import { saveSimulation } from "@/lib/services/history-service";
+import { useProject } from "@/lib/contexts/project-context";
 
 export function useSimulation() {
+  const { projectId } = useProject();
+  const { account } = useWallet();
   const [result, setResult] = useState<SimulationResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,13 +83,39 @@ export function useSimulation() {
       };
 
       setResult(mappedResult);
+
+      // Save to history (only if wallet connected)
+      if (account?.address) {
+        try {
+          await saveSimulation({
+            walletAddress: account.address.toString(),
+            projectId: projectId ?? undefined,
+            network: request.network,
+            senderAddress: request.sender,
+            moduleAddress: request.moduleAddress,
+            moduleName: request.moduleName,
+            functionName: request.functionName,
+            typeArguments: request.typeArgs,
+            arguments: request.args,
+            success: mappedResult.success,
+            gasUsed: mappedResult.gasUsed,
+            vmStatus: mappedResult.vmStatus,
+            stateChanges: mappedResult.stateChanges,
+            events: mappedResult.events,
+            errorMessage: mappedResult.error?.message,
+            result: mappedResult,
+          });
+        } catch (historyErr) {
+          console.warn("Failed to save to history:", historyErr);
+        }
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Simulation failed";
       setError(message);
     } finally {
       setIsLoading(false);
     }
-  }, [apiKey]);
+  }, [apiKey, projectId, account?.address]);
 
   const reset = useCallback(() => {
     setResult(null);
