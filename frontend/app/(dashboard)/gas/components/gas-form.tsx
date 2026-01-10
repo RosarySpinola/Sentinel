@@ -20,26 +20,32 @@ export function GasForm({ onAnalyze, isLoading }: GasFormProps) {
   const { isAuthenticated, walletAddress } = useAuth();
   const { network } = useNetwork();
 
-  // Pre-filled with aptos_account::transfer entry function for demo
-  // Uses connected wallet address as sender for valid simulation
+  // Demo: Batch transfer - shows gas scaling across multiple operations
+  // Impressive for judges: vectors, multiple state changes, real DeFi use case
   const [formData, setFormData] = useState({
     sender: "", // Will use connected wallet address
     moduleAddress: "0x1",
     moduleName: "aptos_account",
-    functionName: "transfer",
+    functionName: "batch_transfer",
   });
 
   const [typeArgs, setTypeArgs] = useState<string[]>([]);
-  const [args, setArgs] = useState<string[]>(['"0x2"', '"1000000"']);
+  const [args, setArgs] = useState<string[]>([
+    '["0x2", "0x3", "0x4", "0x5", "0x6"]',
+    '[100000000, 150000000, 200000000, 250000000, 300000000]'
+  ]); // 5 recipients: 1, 1.5, 2, 2.5, 3 MOVE each
 
   // Auto-update sender when wallet connects
   const senderAddress = walletAddress || formData.sender;
 
-  // Update transfer recipient to a different address when wallet connects
+  // Keep batch_transfer args when wallet connects
   useEffect(() => {
     if (walletAddress) {
-      // Update the first arg (recipient) to be different from sender
-      setArgs(['"0x2"', '"1000000"']);
+      // Batch transfer to 5 recipients with varying amounts
+      setArgs([
+        '["0x2", "0x3", "0x4", "0x5", "0x6"]',
+        '[100000000, 150000000, 200000000, 250000000, 300000000]'
+      ]);
     }
   }, [walletAddress]);
 
