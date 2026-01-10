@@ -17,13 +17,14 @@ interface DebugFormProps {
 
 export function DebugForm({ onSubmit, isLoading, error }: DebugFormProps) {
   const { network } = useNetwork();
-  // Demo: Coin balance check - shows execution trace with resource access
+  // Demo: Get authentication key - shows cryptographic key inspection
+  // Impressive: demonstrates account security model and key derivation
   const [sender, setSender] = useState("0x1");
   const [moduleAddress, setModuleAddress] = useState("0x1");
-  const [moduleName, setModuleName] = useState("coin");
-  const [functionName, setFunctionName] = useState("balance");
-  const [typeArgs, setTypeArgs] = useState("0x1::aptos_coin::AptosCoin");
-  const [args, setArgs] = useState('"0x1"'); // Check system account balance
+  const [moduleName, setModuleName] = useState("account");
+  const [functionName, setFunctionName] = useState("get_authentication_key");
+  const [typeArgs, setTypeArgs] = useState("");
+  const [args, setArgs] = useState('"0x1"'); // Get auth key for system account
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
